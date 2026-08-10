@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Faculty Research & Publications — CS&IT KL University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  <style>
+    /* ── Year tabs (same pattern as awards / conferences) ── */
+    .year-tabs { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:30px; }
+    .year-tab-btn {
+      padding:11px 24px; border:2px solid #1C3557; border-radius:30px;
+      background:white; color:#1C3557; font-size:15px; font-weight:600;
+      cursor:pointer; transition:all 0.3s;
+    }
+    .year-tab-btn:hover, .year-tab-btn.active { background:#1C3557; color:white; }
+
+    .year-section { display:none; }
+    .year-section.active { display:block; }
+
+    .year-heading {
+      font-size:19px; font-weight:700; color:#1C3557;
+      border-left:5px solid #D4A017; padding-left:16px;
+      margin:20px 0 18px 0;
+    }
+
+    /* ── Category sub-tabs ── */
+    .cat-tabs {
+      display:flex; gap:0; flex-wrap:wrap;
+      border-bottom:2px solid #e0e4ee;
+      margin-bottom:22px;
+    }
+    .cat-tab-btn {
+      padding:10px 22px; border:none; background:none;
+      font-size:14px; font-weight:600; color:#666;
+      cursor:pointer; border-bottom:3px solid transparent;
+      margin-bottom:-2px; transition:all .2s;
+      font-family:'Roboto', sans-serif;
+      display:flex; align-items:center; gap:7px;
+    }
+    .cat-tab-btn:hover { color:#1C3557; }
+    .cat-tab-btn.active { color:#8B1A1A; border-bottom-color:#8B1A1A; }
+    .cat-count-badge {
+      background:#e8eaf0; color:#555; font-size:11px; font-weight:700;
+      padding:2px 8px; border-radius:999px;
+    }
+    .cat-tab-btn.active .cat-count-badge { background:#8B1A1A; color:#fff; }
+
+    .cat-panel { display:none; }
+    .cat-panel.active { display:block; }
+
+    /* ── Journal / Conference pub card ── */
+    .pub-grid { display:grid; gap:14px; }
+    .pub-card {
+      background:#fff; border:1px solid #e8eaf0;
+      border-left:4px solid #8B1A1A;
+      border-radius:10px; padding:18px 20px;
+      box-shadow:0 3px 10px rgba(0,0,0,.06);
+      transition:all .25s;
+    }
+    .pub-card:hover { box-shadow:0 8px 24px rgba(0,0,0,.13); transform:translateY(-3px); }
+    .pub-card.conference { border-left-color:#1C3557; }
+    .pub-card.book       { border-left-color:#2d6a4f; }
+    .pub-card.patent     { border-left-color:#7b2d8b; }
+
+    .pub-type-pill {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:10.5px; font-weight:700; letter-spacing:.7px;
+      text-transform:uppercase; padding:3px 11px;
+      border-radius:999px; margin-bottom:10px;
+    }
+    .pub-type-pill.journal    { background:rgba(139,26,26,.1);  color:#8B1A1A; }
+    .pub-type-pill.conference { background:rgba(28,53,87,.1);   color:#1C3557; }
+    .pub-type-pill.book       { background:rgba(45,106,79,.1);  color:#2d6a4f; }
+    .pub-type-pill.patent-pill{ background:rgba(123,45,139,.1); color:#7b2d8b; }
+
+    .pub-title  { font-size:15px; font-weight:700; color:#1a1a2e; line-height:1.5; margin-bottom:6px; }
+    .pub-author { font-size:13px; color:#555; margin-bottom:5px; }
+    .pub-venue  { font-size:13px; font-weight:600; color:#1C3557; font-style:italic; margin-bottom:8px; }
+
+    .pub-meta { display:flex; gap:14px; flex-wrap:wrap; margin-top:6px; }
+    .pub-meta-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:12px; color:#555; font-weight:500;
+      background:#f4f6fb; padding:3px 10px; border-radius:6px;
+    }
+    .pub-meta-chip.q1 { background:#e8f5e9; color:#2e7d32; font-weight:700; }
+    .pub-meta-chip.q2 { background:#e3f2fd; color:#1565c0; font-weight:700; }
+    .pub-meta-chip.q3 { background:#fff8e1; color:#f57f17; font-weight:700; }
+    .pub-meta-chip.granted  { background:#e8f5e9; color:#2e7d32; font-weight:700; }
+    .pub-meta-chip.filed    { background:#fff8e1; color:#f57f17; }
+    .pub-meta-chip.published{ background:#e3f2fd; color:#1565c0; }
+
+    /* ── Book card ── */
+    .book-card {
+      display:flex; gap:18px; align-items:flex-start;
+      background:#fff; border:1px solid #e8eaf0; border-left:4px solid #2d6a4f;
+      border-radius:10px; padding:18px 20px;
+      box-shadow:0 3px 10px rgba(0,0,0,.06);
+      transition:all .25s;
+    }
+    .book-card:hover { box-shadow:0 8px 24px rgba(0,0,0,.13); transform:translateY(-3px); }
+    .book-spine {
+      width:50px; height:68px; border-radius:4px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:26px;
+    }
+    .book-spine.green  { background:linear-gradient(135deg,#2d6a4f,#52b788); }
+    .book-spine.blue   { background:linear-gradient(135deg,#1C3557,#2A4E7C); }
+    .book-spine.gold   { background:linear-gradient(135deg,#b8860b,#d4a017); }
+    .book-spine.purple { background:linear-gradient(135deg,#4a1860,#7b2d8b); }
+    .book-title     { font-size:15px; font-weight:700; color:#1a1a2e; margin-bottom:5px; }
+    .book-author    { font-size:13px; color:#555; margin-bottom:4px; }
+    .book-publisher { font-size:13px; font-weight:600; color:#1C3557; margin-bottom:8px; }
+
+    /* ── Summary strip ── */
+    .research-summary {
+      display:flex; gap:0; flex-wrap:wrap;
+      background:#fff; border:1px solid #e0e4ee; border-radius:12px;
+      margin-bottom:28px; overflow:hidden;
+    }
+    .rs-stat {
+      flex:1; min-width:130px; padding:16px 20px; text-align:center;
+      border-right:1px solid #e0e4ee;
+    }
+    .rs-stat:last-child { border-right:none; }
+    .rs-num {
+      font-size:28px; font-weight:800; color:#8B1A1A; line-height:1;
+      font-family:'Georgia', serif; margin-bottom:4px;
+    }
+    .rs-label { font-size:12px; color:#666; font-weight:500; }
+
+    /* ── Empty state ── */
+    .no-data { color:#999; font-size:14px; padding:32px; text-align:center; }
+
+    /* ── Responsive ── */
+    @media(max-width:600px) {
+      .rs-stat { min-width:50%; border-bottom:1px solid #e0e4ee; }
+      .rs-stat:nth-child(even){ border-right:none; }
+      .book-card { flex-direction:column; }
+    }
+    body { overflow-x:hidden; }
+    img  { max-width:100%; height:auto; }
+  </style>
+</head>
+<body data-page="faculty">
+
+<div id="site-nav"></div>
+
+<div class="page-banner">
+  <div class="container">
+    <div class="page-banner-title">Faculty Research &amp; Publications</div>
+    <div class="page-banner-crumb">
+      <a href="index.html" style="color:#D4A017;font-weight:600;">Home</a> &rsaquo;
+      Faculty &rsaquo; Research &amp; Publications
+    </div>
+  </div>
+</div>
+
+<div class="page-content">
+  <div class="container">
+    <div class="content-grid">
+
+      <!-- ── SIDEBAR ── -->
+      <div class="sidebar">
+        <div class="sidebar-title">Faculty</div>
+        <ul>
+          <li><a href="faculty-awards.html">Faculty Awards</a></li>
+          <li><a href="faculty-research.html" class="active">Research &amp; Publications</a></li>
+          
+          <!--<li><a href="faculty-conferences.html">Conferences</a></li>-->
+          <li><a href="fdps.html">FDPs &amp; Workshops</a></li>
+        </ul>
+      </div>
+
+      <!-- ── MAIN CONTENT ── -->
+      <div class="content-area">
+        <div class="content-banner">
+          <div class="banner-text">
+            <h2>Research &amp; Publications</h2>
+            <p>Peer-reviewed journals, book publications, conference papers and patents — academic year wise</p>
+          </div>
+        </div>
+
+        <!-- Summary strip (filled by JS) -->
+        <div class="research-summary" id="researchSummary"></div>
+
+        <!-- Year Tabs -->
+        <div class="year-tabs" id="researchYearTabs"></div>
+
+        <!-- Year Sections Container -->
+        <div id="researchContainer"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+/* ─────────────────────────────────────────────
+   Faculty Research & Publications — dynamic render
+   Data sources: DB.get('publications'), DB.get('conferences'),
+                 DB.get('books'),        DB.get('patents')
+───────────────────────────────────────────── */
+
+const SPINE_COLORS = ['green','blue','gold','purple'];
+const BOOK_EMOJI   = ['📗','📘','📙','📒'];
+
+/* ── helpers ── */
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function quartileChip(q) {
+  if (!q) return '';
+  const cls = q.includes('1') ? 'q1' : q.includes('2') ? 'q2' : 'q3';
+  return `<span class="pub-meta-chip ${cls}">${esc(q)}</span>`;
+}
+
+function statusChip(status) {
+  if (!status) return '';
+  const cls = status.toLowerCase() === 'granted' ? 'granted'
+            : status.toLowerCase() === 'published' ? 'published' : 'filed';
+  return `<span class="pub-meta-chip ${cls}">⚡ ${esc(status)}</span>`;
+}
+
+/* ── card builders ── */
+function buildJournalCard(p) {
+  return `
+  <div class="pub-card">
+    <span class="pub-type-pill journal">📄 Journal</span>
+    <div class="pub-title">${esc(p.title)}</div>
+    <div class="pub-author">👤 ${esc(p.name)}${p.empId ? ` <span style="color:#999;font-size:12px;">(Emp: ${esc(p.empId)})</span>` : ''}</div>
+    <div class="pub-venue">📖 ${esc(p.journal)}${p.volume ? ' · '+esc(p.volume) : ''}${p.year ? ' · '+esc(p.year) : ''}</div>
+    <div class="pub-meta">
+      ${p.indexing  ? `<span class="pub-meta-chip">🔍 ${esc(p.indexing)}</span>` : ''}
+      ${p.impactFactor ? `<span class="pub-meta-chip">IF: ${esc(p.impactFactor)}</span>` : ''}
+      ${quartileChip(p.quartile)}
+      ${p.doi ? `<span class="pub-meta-chip"><a href="https://doi.org/${esc(p.doi)}" target="_blank" style="color:#8B1A1A;font-weight:600;text-decoration:none;">DOI ↗</a></span>` : ''}
+    </div>
+  </div>`;
+}
+
+function buildConferenceCard(c, i) {
+  const icons = ['🎤','🌐','📊','🔬','🏛️','📡'];
+  return `
+  <div class="pub-card conference">
+    <span class="pub-type-pill conference">🎤 Conference</span>
+    <div class="pub-title">${esc(c.paper || c.title)}</div>
+    <div class="pub-author">👤 ${esc(c.name)}${c.empId ? ` <span style="color:#999;font-size:12px;">(Emp: ${esc(c.empId)})</span>` : ''}</div>
+    <div class="pub-venue">🏛️ ${esc(c.title)}</div>
+    <div class="pub-meta">
+      ${c.level ? `<span class="pub-meta-chip">${c.level === 'International' ? '🌍' : '🇮🇳'} ${esc(c.level)}</span>` : ''}
+      ${c.venue  ? `<span class="pub-meta-chip">📍 ${esc(c.venue)}</span>`  : ''}
+      ${c.date   ? `<span class="pub-meta-chip">📅 ${esc(c.date)}</span>`   : ''}
+    </div>
+  </div>`;
+}
+
+function buildBookCard(b, i) {
+  const idx   = i % SPINE_COLORS.length;
+  const emoji = BOOK_EMOJI[idx];
+  const color = SPINE_COLORS[idx];
+  return `
+  <div class="book-card">
+    <div class="book-spine ${color}">${emoji}</div>
+    <div style="flex:1;">
+      <span class="pub-type-pill book">${b.type === 'Textbook' ? '📚 Textbook' : b.type === 'Edited Book' ? '📝 Edited Book' : '📖 Book Chapter'}</span>
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">👤 ${esc(b.name)}${b.empId ? ` <span style="color:#999;font-size:12px;">(Emp: ${esc(b.empId)})</span>` : ''}</div>
+      <div class="book-publisher">🏢 ${esc(b.publisher || '')}${b.year ? ' · '+esc(b.year) : ''}</div>
+      <div class="pub-meta">
+        ${b.isbn ? `<span class="pub-meta-chip">ISBN: ${esc(b.isbn)}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildPatentCard(p) {
+  return `
+  <div class="pub-card patent">
+    <span class="pub-type-pill patent-pill">🛡️ Patent</span>
+    <div class="pub-title">${esc(p.title)}</div>
+    <div class="pub-author">👤 ${esc(p.name)}${p.empId ? ` <span style="color:#999;font-size:12px;">(Emp: ${esc(p.empId)})</span>` : ''}</div>
+    <div class="pub-venue">🏛️ ${esc(p.office || 'Indian Patent Office')}</div>
+    <div class="pub-meta">
+      ${p.applicationNo ? `<span class="pub-meta-chip">App No: ${esc(p.applicationNo)}</span>` : ''}
+      ${p.filedDate     ? `<span class="pub-meta-chip">📅 Filed: ${esc(p.filedDate)}</span>`   : ''}
+      ${p.grantedDate   ? `<span class="pub-meta-chip">✅ Granted: ${esc(p.grantedDate)}</span>` : ''}
+      ${statusChip(p.status)}
+    </div>
+  </div>`;
+}
+
+/* ── main render ── */
+document.addEventListener('DOMContentLoaded', function () {
+
+  // Load all four datasets
+  const pubs        = DB.get('publications') || [];
+  const conferences = DB.get('conferences')  || [];
+  const books       = DB.get('books')        || [];
+  const patents     = DB.get('patents')      || [];
+
+  // Collect all academic years across all datasets
+  const allItems = [
+    ...pubs.map(x        => x.academicYear),
+    ...conferences.map(x => x.academicYear),
+    ...books.map(x       => x.academicYear),
+    ...patents.map(x     => x.academicYear)
+  ];
+
+  const years = [...new Set(allItems.map(y => String(y || 'Other').trim()))]
+                  .sort((a, b) => b.localeCompare(a, undefined, { numeric:true, sensitivity:'base' }));
+
+  if (!years.length) {
+    document.getElementById('researchContainer').innerHTML =
+      '<p class="no-data">No research data available yet.</p>';
+    return;
+  }
+
+  /* ── summary strip ── */
+  document.getElementById('researchSummary').innerHTML = `
+    <div class="rs-stat"><div class="rs-num">${pubs.length}+</div><div class="rs-label">Journal Papers</div></div>
+    <div class="rs-stat"><div class="rs-num">${conferences.length}+</div><div class="rs-label">Conference Papers</div></div>
+    <div class="rs-stat"><div class="rs-num">${books.length}+</div><div class="rs-label">Books &amp; Chapters</div></div>
+    <div class="rs-stat"><div class="rs-num">${patents.length}+</div><div class="rs-label">Patents</div></div>
+    <div class="rs-stat"><div class="rs-num">${pubs.filter(p=>(p.indexing||'').toLowerCase().includes('sci') || (p.quartile||'').includes('1')).length}+</div><div class="rs-label">Q1 / SCI Papers</div></div>
+  `;
+
+  /* ── year tabs ── */
+  document.getElementById('researchYearTabs').innerHTML =
+    years.map((yr, i) => `
+      <button class="year-tab-btn ${i===0?'active':''}"
+              onclick="showResearchYear('${yr}', this)">
+        ${yr}
+      </button>`).join('');
+
+  /* ── year sections ── */
+  let html = '';
+  years.forEach((yr, idx) => {
+    const safeId = yr.replace(/[^a-zA-Z0-9]/g, '-');
+
+    const yPubs  = pubs.filter(x        => String(x.academicYear||'Other').trim() === yr);
+    const yConfs = conferences.filter(x => String(x.academicYear||'Other').trim() === yr);
+    const yBooks = books.filter(x       => String(x.academicYear||'Other').trim() === yr);
+    const yPats  = patents.filter(x     => String(x.academicYear||'Other').trim() === yr);
+    const total  = yPubs.length + yConfs.length + yBooks.length + yPats.length;
+
+    html += `
+    <div class="year-section ${idx===0?'active':''}" id="res-yr-${safeId}">
+      <div class="year-heading">
+        Academic Year: ${yr}
+        <span style="font-size:14px;font-weight:500;color:#666;">(${total} entries)</span>
+      </div>
+
+      <!-- Category sub-tabs -->
+      <div class="cat-tabs" id="cattabs-${safeId}">
+        ${yPubs.length  ? `<button class="cat-tab-btn active"  onclick="switchCat('${safeId}','journals-${safeId}',this)">📄 Journals <span class="cat-count-badge">${yPubs.length}</span></button>`   : ''}
+        ${yConfs.length ? `<button class="cat-tab-btn ${!yPubs.length?'active':''}" onclick="switchCat('${safeId}','confs-${safeId}',this)">🎤 Conferences <span class="cat-count-badge">${yConfs.length}</span></button>` : ''}
+        ${yBooks.length ? `<button class="cat-tab-btn ${!yPubs.length&&!yConfs.length?'active':''}" onclick="switchCat('${safeId}','books-${safeId}',this)">📚 Books &amp; Chapters <span class="cat-count-badge">${yBooks.length}</span></button>` : ''}
+        ${yPats.length  ? `<button class="cat-tab-btn ${!yPubs.length&&!yConfs.length&&!yBooks.length?'active':''}" onclick="switchCat('${safeId}','patents-${safeId}',this)">🛡️ Patents <span class="cat-count-badge">${yPats.length}</span></button>` : ''}
+      </div>
+
+      <!-- Journals panel -->
+      ${yPubs.length ? `
+      <div class="cat-panel ${true?'active':''}" id="journals-${safeId}">
+        <div class="pub-grid">${yPubs.map(p => buildJournalCard(p)).join('')}</div>
+      </div>` : ''}
+
+      <!-- Conferences panel -->
+      ${yConfs.length ? `
+      <div class="cat-panel" id="confs-${safeId}">
+        <div class="pub-grid">${yConfs.map((c,i) => buildConferenceCard(c,i)).join('')}</div>
+      </div>` : ''}
+
+      <!-- Books panel -->
+      ${yBooks.length ? `
+      <div class="cat-panel" id="books-${safeId}">
+        <div class="pub-grid">${yBooks.map((b,i) => buildBookCard(b,i)).join('')}</div>
+      </div>` : ''}
+
+      <!-- Patents panel -->
+      ${yPats.length ? `
+      <div class="cat-panel" id="patents-${safeId}">
+        <div class="pub-grid">${yPats.map(p => buildPatentCard(p)).join('')}</div>
+      </div>` : ''}
+
+      ${total === 0 ? '<p class="no-data">No entries for this year yet.</p>' : ''}
+    </div>`;
+  });
+
+  document.getElementById('researchContainer').innerHTML = html;
+
+  // Ensure first tab of first year-section is active
+  fixFirstTab();
+});
+
+/* ── year switcher ── */
+window.showResearchYear = function (yr, btn) {
+  document.querySelectorAll('#researchYearTabs .year-tab-btn')
+          .forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#researchContainer .year-section')
+          .forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  const section = document.getElementById('res-yr-' + yr.replace(/[^a-zA-Z0-9]/g, '-'));
+  if (section) section.classList.add('active');
+};
+
+/* ── category switcher (scoped to year section) ── */
+window.switchCat = function (safeId, panelId, btn) {
+  const tabsEl = document.getElementById('cattabs-' + safeId);
+  const section = document.getElementById('res-yr-' + safeId);
+  if (tabsEl)  tabsEl.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+  if (section) section.querySelectorAll('.cat-panel')  .forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add('active');
+};
+
+/* ── ensure first visible tab in first year section is active ── */
+function fixFirstTab() {
+  const firstSection = document.querySelector('.year-section.active');
+  if (!firstSection) return;
+  // Reset all panels in that section
+  firstSection.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  firstSection.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+  const firstTab   = firstSection.querySelector('.cat-tab-btn');
+  const firstPanel = firstSection.querySelector('.cat-panel');
+  if (firstTab)  firstTab.classList.add('active');
+  if (firstPanel) firstPanel.classList.add('active');
+}
+</script>
+</body>
+</html>

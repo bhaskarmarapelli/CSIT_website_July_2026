@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Faculty Conferences — CS&IT KL University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  
+  <style>
+    .year-tabs { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:30px; }
+    .year-tab-btn {
+      padding:11px 24px; border:2px solid #1C3557; border-radius:30px;
+      background:white; color:#1C3557; font-size:15px; font-weight:600;
+      cursor:pointer; transition:all 0.3s;
+    }
+    .year-tab-btn:hover, .year-tab-btn.active { background:#1C3557; color:white; }
+
+    .year-section { display:none; }
+    .year-section.active { display:block; }
+
+    .year-heading {
+      font-size:19px; font-weight:700; color:#1C3557;
+      border-left:5px solid #D4A017; padding-left:16px;
+      margin:20px 0 18px 0;
+    }
+
+    .conferences-grid { display:grid; gap:18px; }
+
+    .conference-card {
+      display:flex; align-items:flex-start; gap:20px;
+      background:#fff; border:1px solid #e8eaf0; border-radius:12px;
+      padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.07);
+      transition: all 0.25s;
+    }
+    .conference-card:hover { box-shadow:0 8px 25px rgba(0,0,0,0.15); transform: translateY(-4px); }
+
+    .conference-icon { font-size:38px; flex-shrink:0; }
+    .conference-title { font-size:16.5px; font-weight:700; color:#1C3557; margin-bottom:8px; }
+    .conference-faculty { font-size:14.5px; color:#222; margin-bottom:6px; }
+    .conference-details { font-size:13.5px; color:#555; margin-bottom:10px; }
+    .conference-badge {
+      display:inline-block; background:#e8f0fb; color:#1C3557;
+      font-size:13px; font-weight:600; padding:6px 14px; border-radius:20px;
+    }
+    .conference-badge.intl { background:#fff3cd; color:#856404; }
+  </style>
+  <style>
+    /* Mobile table scroll */
+    .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Bottom padding for Apply Now fixed bar */
+    @media(max-width:576px){ body { padding-bottom: 48px; } }
+    /* Prevent horizontal overflow */
+    body { overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
+    /* Responsive iframes (organogram, etc.) */
+    iframe { max-width: 100%; }
+  </style>
+</head>
+<body data-page="faculty">
+
+<div id="site-nav"></div>
+
+<div class="page-banner">
+  <div class="container">
+    <div class="page-banner-title">Faculty Conferences</div>
+    <div class="page-banner-crumb"><a href="index.html" style="color:#D4A017;font-weight:600;">Home</a> &rsaquo; Faculty Conferences</div>
+  </div>
+</div>
+
+<div class="page-content">
+  <div class="container">
+    <div class="content-grid">
+      <div class="sidebar">
+        <div class="sidebar-title">Achievements</div>
+        <ul>
+          <li><a href="faculty-awards.html">Faculty Awards</a></li>
+          <li><a href="faculty-conferences.html" class="active">Conferences</a></li>
+          <li><a href="fdps.html">FDPs & Workshops</a></li>
+        </ul>
+      </div>
+
+      <div class="content-area">
+        <div class="content-banner">
+          <div class="banner-text">
+            <h2>Faculty Conferences & Presentations</h2>
+            <p>Showcasing our faculty's research contributions at national and international conferences</p>
+          </div>
+        </div>
+
+        <!-- Academic Year Tabs -->
+        <div class="year-tabs" id="conferenceYearTabs"></div>
+
+        <!-- Conferences Container -->
+        <div id="conferencesContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const CONF_ICONS = ['&#127908;', '&#128202;', '&#127760;', '&#128221;', '&#128300;', '&#127942;'];
+const LEVEL_ICONS = { 'International': '&#127757;', 'National': '&#127470;&#127475;' };
+
+document.addEventListener("DOMContentLoaded", function() {
+    const conferences = DB.get("conferences") || [];
+
+    const tabsEl = document.getElementById("conferenceYearTabs");
+    const container = document.getElementById("conferencesContainer");
+
+    if (!conferences.length) {
+        container.innerHTML = '<p class="no-data">No conference data available yet.</p>';
+        return;
+    }
+
+    const years = [...new Set(conferences.map(c => String(c.academicYear || "Other").trim()))]
+                    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+
+    tabsEl.innerHTML = years.map((yr, i) => `
+        <button class="year-tab-btn ${i === 0 ? 'active' : ''}" 
+                onclick="showConferenceYear('${yr}', this)">
+            ${yr}
+        </button>
+    `).join('');
+
+    let html = '';
+    years.forEach((yr, idx) => {
+        const list = conferences.filter(c => String(c.academicYear || "Other").trim() === yr);
+
+        html += `
+        <div class="year-section ${idx === 0 ? 'active' : ''}" id="conf-yr-${yr.replace(/[^a-zA-Z0-9]/g, '-')}">
+            <div class="year-heading">
+                Academic Year: ${yr} 
+                <span style="font-size:14px;font-weight:500;color:#666;">(${list.length} Conferences)</span>
+            </div>
+            <div class="conferences-grid">
+                ${list.map((c, i) => `
+                <div class="conference-card">
+                    <div class="conference-icon">${CONF_ICONS[i % CONF_ICONS.length]}</div>
+                    <div style="flex:1;">
+                        <div class="conference-title">${c.title}</div>
+                        <div class="conference-faculty">
+                            &#128100; ${c.name} ${c.empId ? `<span style="color:#666;font-size:13px;">(Emp ID: ${c.empId})</span>` : ''}
+                        </div>
+                        <div class="conference-details">
+                            &#128205; ${c.venue} | &#128197; ${c.date}<br>
+                            &#128196; ${c.paper || 'Paper Presented'}
+                        </div>
+                        <span class="conference-badge ${c.level === 'International' ? 'intl' : ''}">
+                            ${LEVEL_ICONS[c.level] || ''} ${c.level}
+                        </span>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+});
+
+window.showConferenceYear = function(yr, btn) {
+    document.querySelectorAll('.year-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.year-section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    const section = document.getElementById('conf-yr-' + yr.replace(/[^a-zA-Z0-9]/g, '-'));
+    if (section) section.classList.add('active');
+};
+</script>
+</body>
+</html>

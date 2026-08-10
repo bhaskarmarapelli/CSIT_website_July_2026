@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Placements — CS&IT KL University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* ── Placement Hero ── */
+    .pl-hero{background:linear-gradient(135deg,#1C3557 0%,#0f1d3a 55%,#1e3566 100%);padding:36px 0 30px;border-bottom:3px solid #D4A017;}
+    .pl-hero .bc{color:#a8c0d8;font-size:12.5px;margin-bottom:10px;display:flex;gap:6px;align-items:center;}
+    .pl-hero .bc a{color:#D4A017;font-weight:600;text-decoration:none;}
+    .pl-hero h1{color:#fff;font-size:28px;font-weight:800;margin-bottom:6px;}
+    .pl-hero .sub{color:#a8c0d8;font-size:13.5px;margin-bottom:28px;}
+    /* KPI strip */
+    .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+    .kpi-box{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);border-radius:8px;padding:18px 12px;text-align:center;transition:background .2s;}
+    .kpi-box:hover{background:rgba(255,255,255,0.12);}
+    .kpi-n{display:block;font-size:28px;font-weight:900;color:#D4A017;line-height:1;}
+    .kpi-l{font-size:10.5px;color:#a8c0d8;margin-top:5px;line-height:1.4;text-transform:uppercase;letter-spacing:.4px;}
+    /* View toggle */
+    .view-toggle{display:flex;background:#f5f7fa;border:1px solid #dee2e6;border-radius:6px;overflow:hidden;width:fit-content;}
+    .view-btn{padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#666;border-right:1px solid #dee2e6;transition:all .2s;font-family:'Segoe UI',Arial,sans-serif;}
+    .view-btn:last-child{border-right:none;}
+    .view-btn.active{background:#1C3557;color:#fff;}
+    .view-btn:hover:not(.active){background:#e4ecf8;color:#1C3557;}
+    .view-section{display:none;}.view-section.active{display:block;}
+    /* Year tabs */
+    .yr-tabs{display:flex;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;margin-bottom:24px;}
+    .yr-tab{flex:1;padding:14px 10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;background:#f5f7fa;color:#666;border-right:1px solid #dee2e6;transition:all .2s;line-height:1.2;}
+    .yr-tab:last-child{border-right:none;}
+    .yr-tab:hover:not(.active){background:#e4ecf8;color:#1C3557;}
+    .yr-tab.active{background:#1C3557;color:#fff;}
+    .yr-n{display:block;font-size:24px;font-weight:900;color:#D4A017;margin-bottom:2px;}
+    /* Chart cards */
+    .chart-card{background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:20px 22px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .chart-card h4{font-size:13px;font-weight:700;color:#1C3557;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #D4A017;}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+    .g32{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px;}
+    /* Batch KPI mini cards */
+    .b-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+    .b-kpi-card{background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:16px 12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+    .bkn{display:block;font-size:26px;font-weight:900;line-height:1;margin-bottom:4px;}
+    .bkl{font-size:11.5px;color:#666;}
+    .bkn.navy{color:#1C3557;}.bkn.gold{color:#c68000;}.bkn.green{color:#2a7d32;}.bkn.maroon{color:#8b1a1a;}
+    /* Company table */
+    .co-tbl{width:100%;border-collapse:collapse;font-size:13.5px;}
+    .co-tbl thead th{background:#1C3557;color:#fff;padding:11px 14px;text-align:left;font-weight:700;font-size:11.5px;letter-spacing:.3px;text-transform:uppercase;}
+    .co-tbl thead th.c{text-align:center;}
+    .co-tbl tbody td{padding:10px 14px;border-bottom:1px solid #f0f0f0;vertical-align:middle;color:#444;}
+    .co-tbl tbody tr:nth-child(even) td{background:#f9fafb;}
+    .co-tbl tbody tr:hover td{background:#eef3ff;}
+    .rk{font-weight:900;color:#1C3557;width:70px;text-align:center;font-size:15px;}
+    .co-nm{font-weight:700;color:#1C3557;}
+    .cpill{display:inline-flex;align-items:center;justify-content:center;background:#1C3557;color:#fff;border-radius:20px;min-width:34px;height:26px;padding:0 10px;font-size:13px;font-weight:700;}
+    .pkg-val{font-weight:800;font-size:14px;}
+    .ph{color:#8b1a1a;}.pm{color:#1C3557;}.pn{color:#2a7d32;}
+    .barf{display:inline-block;height:8px;border-radius:4px;background:linear-gradient(90deg,#1C3557,#4a6abf);vertical-align:middle;}
+    /* Recruiter badges */
+    .rbrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 22px;}
+    .rbadge{background:#fff;border:1.5px solid #c0d0e8;border-radius:20px;padding:5px 14px;font-size:12.5px;font-weight:600;color:#1C3557;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+    .rbadge strong{color:#8b1a1a;}
+    /* Section title */
+    .stitle{font-size:17px;font-weight:700;color:#1C3557;border-left:4px solid #D4A017;padding-left:12px;margin:28px 0 16px;}
+    .batch-pnl{display:none;}.batch-pnl.active{display:block;}
+    /* Sidebar additions */
+    .sidebar-stat{padding:14px 16px;border-top:1px solid #e0e0e0;}
+    .pri{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;}
+    .prm{font-size:16px;flex-shrink:0;}
+    .pri-info{flex:1;min-width:0;}
+    .pri-name{font-weight:700;color:#1C3557;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pri-co{color:#666;font-size:11px;}
+    .pri-val{font-weight:900;color:#8b1a1a;font-size:13px;white-space:nowrap;}
+    @media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr);}.g2,.g32{grid-template-columns:1fr;}.b-kpi{grid-template-columns:repeat(2,1fr);}.yr-tabs{flex-wrap:wrap;}}
+    @media(max-width:560px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+  </style>
+  <style>
+    /* Mobile table scroll */
+    .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Bottom padding for Apply Now fixed bar */
+    @media(max-width:576px){ body { padding-bottom: 48px; } }
+    /* Prevent horizontal overflow */
+    body { overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
+    /* Responsive iframes (organogram, etc.) */
+    iframe { max-width: 100%; }
+  
+    @media(max-width:576px){
+      .kpi-row{grid-template-columns:repeat(2,1fr)!important;}
+      .kpi-n{font-size:22px!important;}
+      .g2,.g32{grid-template-columns:1fr!important;}
+      .b-kpi{grid-template-columns:repeat(2,1fr)!important;}
+      .yr-tabs{flex-direction:column;}
+      .yr-tab{border-right:none!important;border-bottom:1px solid #dee2e6;}
+      .pl-hero h1{font-size:20px!important;}
+      .co-tbl{min-width:600px;}
+    }
+    </style>
+</head>
+<body data-page="placements">
+<div id="site-nav"></div>
+
+<div class="page-banner">
+  <div class="container">
+    <div class="page-banner-title">&#128202; Student Placements — CS&IT</div>
+    <div class="page-banner-crumb"><a href="index.html">Home</a> &rsaquo; <a href="placements.html">Student Corner</a> &rsaquo; Placements</div>
+    <p style="color:rgba(255,255,255,.75);font-size:13.5px;margin-top:6px;">Year-wise analytics, company data, and package trends for all batches</p>
+    <div class="kpi-row">
+      <div class="kpi-box"><span class="kpi-n" id="kTot">—</span><div class="kpi-l">Total Students Placed</div></div>
+      <div class="kpi-box"><span class="kpi-n" id="kHigh">—</span><div class="kpi-l">Highest Package</div></div>
+      <div class="kpi-box"><span class="kpi-n" id="kAvg">—</span><div class="kpi-l">Average Package</div></div>
+      <div class="kpi-box"><span class="kpi-n" id="kCo">—</span><div class="kpi-l">Recruiting Companies</div></div>
+      <div class="kpi-box"><span class="kpi-n">100%</span><div class="kpi-l">Placement Support</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="page-content">
+  <div class="container">
+    <div class="content-grid">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-title">Placements</div>
+        <ul>
+          <li><a href="placements.html" class="active">Placement Analytics</a></li>
+          <li><a href="higher-studies.html">Higher Studies</a></li>
+          <li><a href="certifications.html">Global Certificates</a></li>
+        </ul>
+        <div class="sidebar-stat">
+          <div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">🏅 Top Packages</div>
+          <div id="sTopPkg"></div>
+        </div>
+        <div class="sidebar-stat" style="border-top:1px solid #e8e8e8;padding-top:10px;">
+          <div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">📋 Quick Jump</div>
+          <div id="batchLinks" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="content-area" style="padding:0;overflow:hidden;">
+        <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:2px solid #D4A017;margin-bottom:20px;padding-bottom:14px;">
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('ov',this)">📊 Overall Analytics</button>
+            <button class="view-btn" onclick="switchView('bt',this)">📋 Batch-wise Details</button>
+          </div>
+          <button onclick="refreshAll()" id="refreshBtn" style="padding:8px 18px;background:#e8f0fb;border:1.5px solid #8B1A1A;color:#8B1A1A;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#8B1A1A';this.style.color='white'" onmouseout="this.style.background='#e8f0fb';this.style.color='#8B1A1A'">
+            🔄 Refresh Charts
+          </button>
+        </div>
+
+        <div style="padding:0 24px 24px;">
+          <!-- Overall view -->
+          <div id="view-ov" class="view-section active">
+            <div class="g2">
+              <div class="chart-card"><h4>📈 Year-wise Placement Trend</h4><canvas id="cTrend" height="220"></canvas></div>
+              <div class="chart-card"><h4>💰 Package Trend (LPA)</h4><canvas id="cPkgTrend" height="220"></canvas></div>
+            </div>
+            <div class="g2">
+              <div class="chart-card"><h4>⚧ Gender Distribution — All Batches</h4><canvas id="cGenderAll" height="200"></canvas></div>
+              <div class="chart-card"><h4>💼 Package Range Distribution</h4><canvas id="cPkgAll" height="200"></canvas></div>
+            </div>
+            <div class="chart-card" style="margin-bottom:18px;"><h4>🏢 Top Companies — All Batches</h4><canvas id="cCoAll" height="220"></canvas></div>
+            <div class="stitle">📋 All Companies Summary</div>
+            <div style="overflow-x:auto;">
+              <table class="co-tbl">
+                <thead><tr><th class="c">#</th><th>Company</th><th class="c">Total Students</th><th class="c">Highest Pkg</th><th>Share %</th><th>Batches</th></tr></thead>
+                <tbody id="allCoTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Batch view -->
+          <div id="view-bt" class="view-section">
+            <div class="yr-tabs" id="yrTabs"></div>
+            <div id="batchPanels"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const C={navy:'#1C3557',maroon:'#8b1a1a',gold:'#D4A017',green:'#2a7d32',blue:'#1565c0',orange:'#c65000'};
+const YLBL={y20:'2020-2024 Batch',y21:'2021-2025 Batch',y22:'2022-2026 Batch',y23:'2023-2027 Batch',y24:'2024-2028 Batch',y25:'2025-2029 Batch',y26:'2026-2030 Batch'};
+const chartReg={};
+let activeBatch, currentView='ov';
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ── Auto-refresh when tab regains focus (user comes back from admin) ──
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') refreshAll();
+});
+
+// ── Auto-refresh when localStorage changes from another tab ──
+window.addEventListener('storage', function(e) {
+  if (e.key && e.key.startsWith('csit_')) refreshAll();
+});
+
+function init() {
+  DB.init(); // Initialize database with default data
+  const batches = DB.getBatches();
+  activeBatch = batches[0];
+  render(batches);
+}
+
+function refreshAll() {
+  // Destroy all existing charts so they can be redrawn fresh
+  Object.keys(chartReg).forEach(id => {
+    try { chartReg[id].destroy(); delete chartReg[id]; } catch(e) {}
+  });
+  // Re-render batch panels from scratch
+  document.getElementById('batchPanels').innerHTML = '';
+  const batches = DB.getBatches();
+  if (!activeBatch || !batches.includes(activeBatch)) activeBatch = batches[0];
+  render(batches);
+
+  // Flash the refresh button
+  const btn = document.getElementById('refreshBtn');
+  if (btn) {
+    btn.textContent = '&#9989; Updated!';
+    btn.style.background = '#e8f5e9';
+    btn.style.borderColor = '#2e7d32';
+    btn.style.color = '#2e7d32';
+    setTimeout(() => {
+      btn.innerHTML = '&#128260; Refresh Charts';
+      btn.style.background = '#e8f0fb';
+      btn.style.borderColor = '#1C3557';
+      btn.style.color = '#1C3557';
+    }, 1800);
+  }
+}
+
+function render(batches) {
+  computeGlobalKPIs(batches);
+  buildSidebarTopPkg();
+  buildBatchLinks(batches);
+  buildYrTabs(batches);
+  buildBatchPanels(batches);
+  drawOverviewCharts(batches);
+  if (currentView === 'bt') setTimeout(() => renderBatch(activeBatch), 80);
+}
+
+function switchView(name, btn) {
+  document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+  currentView = name;
+  if (name === 'bt') setTimeout(() => renderBatch(activeBatch), 60);
+}
+
+function computeGlobalKPIs(batches) {
+  const data = DB.get('placements');
+  let total=0, highest=0, allNums=[], allCos=new Set();
+  batches.forEach(b => {
+    (data[b]||[]).forEach(r => {
+      total++;
+      if ((r.ctcNum||0) > highest) highest = r.ctcNum;
+      if (r.ctcNum > 0) allNums.push(r.ctcNum);
+      allCos.add(r.company);
+    });
+  });
+  const avg = allNums.length ? (allNums.reduce((s,n)=>s+n,0)/allNums.length).toFixed(1) : 0;
+  document.getElementById('kTot').textContent  = total;
+  document.getElementById('kHigh').textContent = highest + ' LPA';
+  document.getElementById('kAvg').textContent  = avg + ' LPA';
+  document.getElementById('kCo').textContent   = allCos.size + '+';
+}
+
+function buildSidebarTopPkg() {
+  const data = DB.get('placements');
+  const all = [];
+  Object.keys(data).forEach(b => (data[b]||[]).forEach(r => { if(r.ctcNum>0) all.push(r); }));
+  all.sort((a,b) => b.ctcNum - a.ctcNum);
+  const medals = ['&#129351;','&#129352;','&#129353;','4⃣','5⃣'];
+  document.getElementById('sTopPkg').innerHTML = all.slice(0,5).map((r,i) => `
+    <div class="pri"><div class="prm">${medals[i]}</div>
+    <div class="pri-info"><div class="pri-name">${r.name.split(' ').slice(-2).join(' ')}</div><div class="pri-co">${r.company}</div></div>
+    <div class="pri-val">${r.ctcNum} LPA</div></div>`).join('');
+}
+
+function buildBatchLinks(batches) {
+  document.getElementById('batchLinks').innerHTML = batches.map(b =>
+    `<a href="#" onclick="jumpBatch('${b}');return false;" style="font-size:12.5px;color:var(--BLUE);font-weight:700;padding:4px 8px;border-radius:5px;background:#f0f4fb;display:block;">${b.toUpperCase()} — ${YLBL[b]||b}</a>`
+  ).join('');
+}
+
+function jumpBatch(b) {
+  activeBatch = b;
+  document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('view-bt').classList.add('active');
+  document.querySelectorAll('.view-btn')[1].classList.add('active');
+  currentView = 'bt';
+  updateYrTabHighlight();
+  setTimeout(() => renderBatch(b), 60);
+}
+
+function buildYrTabs(batches) {
+  const data = DB.get('placements');
+  document.getElementById('yrTabs').innerHTML = batches.map(b =>
+    `<div class="yr-tab${b===activeBatch?' active':''}" onclick="selectBatch(this,'${b}')">
+      <span class="yr-n">${(data[b]||[]).length}</span>${b.toUpperCase()}<br><small style="font-size:9.5px;font-weight:400;">${YLBL[b]||''}</small>
+    </div>`
+  ).join('');
+}
+
+function updateYrTabHighlight() {
+  document.querySelectorAll('.yr-tab').forEach(t => {
+    const isActive = t.getAttribute('onclick') && t.getAttribute('onclick').includes("'"+activeBatch+"'");
+    t.classList.toggle('active', isActive);
+  });
+}
+
+function selectBatch(el, b) {
+  activeBatch = b;
+  document.querySelectorAll('.yr-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderBatch(b);
+}
+
+function buildBatchPanels(batches) {
+  const container = document.getElementById('batchPanels');
+  // Only rebuild if empty (avoid duplicate panels)
+  if (!container.innerHTML.trim()) {
+    container.innerHTML = batches.map(b =>
+      `<div class="batch-pnl" id="bp-${b}"></div>`
+    ).join('');
+  }
+  if (currentView === 'bt') renderBatch(activeBatch);
+}
+
+function renderBatch(batch) {
+  document.querySelectorAll('.batch-pnl').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('bp-'+batch);
+  if (!panel) return;
+  panel.classList.add('active');
+
+  // Always rebuild innerHTML so new data is shown
+  const rows   = (DB.get('placements')[batch]) || [];
+  const stats  = DB.getCompanyStats(batch);
+  const gender = DB.getGenderSplit(batch);
+  const high   = rows.length ? Math.max(...rows.map(r=>r.ctcNum||0)).toFixed(1) : '—';
+  const nums   = rows.filter(r=>r.ctcNum>0).map(r=>r.ctcNum);
+  const avg    = nums.length ? (nums.reduce((s,n)=>s+n,0)/nums.length).toFixed(1) : '—';
+
+  // Destroy stale charts for this batch before rebuilding
+  ['cCoBat-','cGenBat-','cPkgDist-','cPkgTop-'].forEach(prefix => {
+    const id = prefix + batch;
+    if (chartReg[id]) { try { chartReg[id].destroy(); } catch(e){} delete chartReg[id]; }
+  });
+
+  panel.innerHTML = `
+    <div class="b-kpi">
+      <div class="b-kpi-card"><span class="bkn navy">${rows.length}</span><div class="bkl">Students Placed</div></div>
+      <div class="b-kpi-card"><span class="bkn gold">${high} LPA</span><div class="bkl">Highest Package</div></div>
+      <div class="b-kpi-card"><span class="bkn green">${avg} LPA</span><div class="bkl">Average Package</div></div>
+      <div class="b-kpi-card"><span class="bkn maroon">${stats.length}</span><div class="bkl">Companies</div></div>
+    </div>
+    <div class="g32">
+      <div class="chart-card"><h4>&#127962; Students Placed — Top Companies (${YLBL[batch]||batch.toUpperCase()})</h4><canvas id="cCoBat-${batch}" height="260"></canvas></div>
+      <div class="chart-card"><h4>&#9895; Gender Split</h4>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:14px;">
+          <canvas id="cGenBat-${batch}" style="max-height:180px;max-width:180px;"></canvas>
+          <div style="display:flex;gap:20px;font-size:13px;">
+            <span style="font-weight:700;color:#8b1a1a;">&#128104; Male: ${gender.male}</span>
+            <span style="font-weight:700;color:#8b1a1a;">&#128105; Female: ${gender.female}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="chart-card"><h4>&#128176; Package Range Distribution</h4><canvas id="cPkgDist-${batch}" height="200"></canvas></div>
+      <div class="chart-card"><h4>&#128202; Highest Package — Top 8 Companies</h4><canvas id="cPkgTop-${batch}" height="200"></canvas></div>
+    </div>
+    <div class="stitle">&#127962; Company-wise Placement Data — ${YLBL[batch]||batch.toUpperCase()}</div>
+    <div class="rbrow" id="rbb-${batch}"></div>
+    <div style="overflow-x:auto;margin-bottom:8px;background:var(--card-bg);">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="co-tbl">
+        <thead><tr><th class="c" style="width:50px;">#</th><th>Company</th><th class="c">Students Placed</th><th class="c">Highest Package</th><th style="min-width:140px;">Representation</th></tr></thead>
+        <tbody id="ctb-${batch}"></tbody>
+      </table>
+    </div>`;
+
+  setTimeout(() => {
+    drawCoBat(batch, stats);
+    drawGenBat(batch, gender);
+    drawPkgDist(batch, rows);
+    drawPkgTop(batch, stats);
+    drawCoTbl(batch, stats);
+    drawBadges(batch, stats);
+  }, 60);
+}
+
+function drawOverviewCharts(batches) {
+  const data  = DB.get('placements');
+  const trend = DB.getYearTrend();
+  const lbls  = trend.map(t => t.batch);
+
+  // Destroy overview charts before redrawing
+  ['cTrend','cPkgTrend','cGenderAll','cPkgAll','cCoAll'].forEach(id => {
+    if (chartReg[id]) { try { chartReg[id].destroy(); } catch(e){} delete chartReg[id]; }
+  });
+
+  mkChart('cTrend','bar', lbls,
+    [{ label:'Students Placed', data:trend.map(t=>t.total),
+       backgroundColor:lbls.map((_,i)=>`hsl(${215-i*12},${70-i*3}%,${34+i*4}%)`), borderRadius:8, borderSkipped:false }],
+    { plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} students placed`}}},
+      scales:{ y:{beginAtZero:true,ticks:{stepSize:5},grid:{color:'#f0f0f0'}}, x:{grid:{display:false}} } });
+
+  mkChart('cPkgTrend','line', lbls, [
+    { label:'Highest (LPA)', data:trend.map(t=>t.highest), borderColor:C.orange, backgroundColor:'rgba(198,80,0,0.1)', tension:.4, fill:false, pointRadius:5, pointBackgroundColor:C.orange, borderWidth:2.5 },
+    { label:'Average (LPA)', data:trend.map(t=>parseFloat(t.avgCtc)||0), borderColor:C.navy, backgroundColor:'rgba(26,46,90,0.08)', tension:.4, fill:true, pointRadius:5, pointBackgroundColor:C.navy, borderWidth:2.5 }],
+    { plugins:{legend:{position:'top',labels:{font:{size:12}}}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ₹${c.raw} LPA`}}},
+      scales:{ y:{beginAtZero:true, grid:{color:'#f0f0f0'}, ticks:{callback:v=>'₹'+v}}, x:{grid:{display:false}} } });
+
+  const gSplit = batches.map(b => DB.getGenderSplit(b));
+  mkChart('cGenderAll','bar', batches.map(b=>b.toUpperCase()), [
+    { label:'Male',   data:gSplit.map(g=>g.male),   backgroundColor:C.navy, borderRadius:6 },
+    { label:'Female', data:gSplit.map(g=>g.female), backgroundColor:C.maroon, borderRadius:6 }],
+    { plugins:{legend:{position:'top'}},
+      scales:{ x:{grid:{display:false}}, y:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{stepSize:5}} } });
+
+  const allRows = batches.flatMap(b => (data[b]||[]));
+  const pkgR = [
+    {l:'< 4 LPA',min:0,max:4},{l:'4–6 LPA',min:4,max:6},{l:'6–8 LPA',min:6,max:8},
+    {l:'8–12 LPA',min:8,max:12},{l:'12–20 LPA',min:12,max:20},{l:'20+ LPA',min:20,max:9999}
+  ];
+  mkChart('cPkgAll','bar', pkgR.map(r=>r.l),
+    [{ label:'Students', data:pkgR.map(r=>allRows.filter(s=>(s.ctcNum||0)>=r.min&&(s.ctcNum||0)<r.max).length),
+       backgroundColor:['#c8d6f0','#90a8e0','#5578c0','#1C3557','#D4A017','#c65000'], borderRadius:6 }],
+    { plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} students`}}},
+      scales:{ y:{beginAtZero:true,ticks:{stepSize:2},grid:{color:'#f0f0f0'}}, x:{grid:{display:false},ticks:{font:{size:11}}} } });
+
+  // Build combined company map
+  const coMap = {};
+  batches.forEach(b => {
+    (data[b]||[]).forEach(r => {
+      if (!coMap[r.company]) coMap[r.company] = {count:0,highest:0,batches:new Set()};
+      coMap[r.company].count++;
+      if ((r.ctcNum||0) > coMap[r.company].highest) coMap[r.company].highest = r.ctcNum;
+      coMap[r.company].batches.add(b.toUpperCase());
+    });
+  });
+  const allCoStats = Object.entries(coMap)
+    .map(([co,v]) => ({company:co, count:v.count, highest:v.highest, batches:[...v.batches].join(', ')}))
+    .sort((a,b) => b.count - a.count);
+  const top15 = allCoStats.slice(0,15);
+
+  mkChart('cCoAll','bar', top15.map(s=>s.company.length>20?s.company.slice(0,18)+'…':s.company),
+    [{ label:'Students', data:top15.map(s=>s.count),
+       backgroundColor:top15.map((_,i)=>`hsl(${215-i*7},${68-i*2}%,${30+i*3}%)`), borderRadius:5 }],
+    { indexAxis:'y',
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
+        const s=top15.find(x=>c.label.startsWith(x.company.slice(0,10)));
+        return ` ${c.raw} students`+(s&&s.highest>0?` | Highest: ₹${s.highest} LPA`:'');
+      }}}},
+      scales:{ x:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f0f0f0'}}, y:{grid:{display:false},ticks:{font:{size:11.5}}} } });
+
+  buildAllCoTbl(allCoStats);
+}
+
+function buildAllCoTbl(allCoStats) {
+  const tbody = document.getElementById('allCoTbody');
+  if (!tbody) return;
+  const total = allCoStats.reduce((s,x)=>s+x.count,0), maxC = allCoStats[0]?allCoStats[0].count:1;
+  tbody.innerHTML = allCoStats.map((s,i) => {
+    const medal   = i===0?'&#129351;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
+    const barW    = Math.round((s.count/maxC)*120);
+    const pc      = s.highest>=20?'ph':s.highest>=10?'pm':'pn';
+    const pct     = Math.round(s.count/total*100);
+    return `<tr><td class="rk">${medal}</td><td class="co-nm">${s.company}</td>
+      <td style="text-align:center;"><span class="cpill">${s.count}</span></td>
+      <td style="text-align:center;"><span class="${pc} pkg-val">${s.highest>0?'₹'+s.highest+' LPA':'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><span class="barf" style="width:${barW}px;min-width:4px;"></span><span style="font-size:11px;color:var(--muted);">${pct}%</span></div></td>
+      <td style="font-size:11.5px;color:var(--muted);">${s.batches}</td></tr>`;
+  }).join('');
+}
+
+/* ── Chart helpers ─────────────────────────────── */
+function mkChart(id, type, labels, datasets, opts) {
+  const ctx = document.getElementById(id); if (!ctx) return;
+  if (chartReg[id]) { try { chartReg[id].destroy(); } catch(e){} }
+  chartReg[id] = new Chart(ctx, { type, data:{labels,datasets}, options:{responsive:true,maintainAspectRatio:true,...opts} });
+}
+function drawCoBat(batch, stats) {
+  const top = stats.slice(0,12);
+  mkChart('cCoBat-'+batch,'bar', top.map(s=>s.company.length>20?s.company.slice(0,18)+'…':s.company),
+    [{ label:'Students', data:top.map(s=>s.count), backgroundColor:top.map((_,i)=>`hsl(${215-i*9},${65-i*2}%,${32+i*3}%)`), borderRadius:5 }],
+    { indexAxis:'y',
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
+        const s=stats.find(x=>c.label.startsWith(x.company.slice(0,10)));
+        return ` ${c.raw} students`+(s&&s.highest>0?` | Highest: ₹${s.highest} LPA`:'');
+      }}}},
+      scales:{ x:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f0f0f0'}}, y:{grid:{display:false},ticks:{font:{size:11.5}}} } });
+}
+function drawGenBat(batch, gender) {
+  mkChart('cGenBat-'+batch,'doughnut',['Male','Female'],
+    [{ data:[gender.male,gender.female], backgroundColor:[C.navy,C.maroon], borderWidth:3, borderColor:'#fff' }],
+    { cutout:'62%', plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} (${Math.round(c.raw/(gender.male+gender.female||1)*100)}%)`}}} });
+}
+function drawPkgDist(batch, rows) {
+  const ranges=[{l:'< 4 LPA',min:0,max:4},{l:'4–6 LPA',min:4,max:6},{l:'6–8 LPA',min:6,max:8},{l:'8–12 LPA',min:8,max:12},{l:'12–20 LPA',min:12,max:20},{l:'20+ LPA',min:20,max:9999}];
+  mkChart('cPkgDist-'+batch,'bar', ranges.map(r=>r.l),
+    [{ label:'Students', data:ranges.map(r=>rows.filter(s=>(s.ctcNum||0)>=r.min&&(s.ctcNum||0)<r.max).length),
+       backgroundColor:['#c8d6f0','#90a8e0','#5578c0','#1C3557','#D4A017','#c65000'], borderRadius:6 }],
+    { plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} students`}}},
+      scales:{ y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f0f0f0'}}, x:{grid:{display:false},ticks:{font:{size:11}}} } });
+}
+function drawPkgTop(batch, stats) {
+  const top8 = [...stats].filter(s=>s.highest>0).sort((a,b)=>b.highest-a.highest).slice(0,8);
+  mkChart('cPkgTop-'+batch,'bar', top8.map(s=>s.company.length>18?s.company.slice(0,16)+'…':s.company),
+    [{ label:'Highest Package (LPA)', data:top8.map(s=>s.highest),
+       backgroundColor:top8.map(s=>s.highest>=20?C.orange:s.highest>=10?C.gold:C.navy), borderRadius:5 }],
+    { indexAxis:'y',
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ₹${c.raw} LPA`}}},
+      scales:{ x:{beginAtZero:true,grid:{color:'#f0f0f0'}}, y:{grid:{display:false},ticks:{font:{size:11}}} } });
+}
+function drawCoTbl(batch, stats) {
+  const tbody = document.getElementById('ctb-'+batch); if (!tbody) return;
+  const maxC = stats[0]?stats[0].count:1, total = stats.reduce((s,x)=>s+x.count,0);
+  tbody.innerHTML = stats.map((s,i) => {
+    const medal = i===0?'&#129351;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
+    const pc    = s.highest>=20?'ph':s.highest>=10?'pm':'pn';
+    const pct   = total>0?Math.round(s.count/total*100):0;
+    return `<tr><td class="rk">${medal}</td><td class="co-nm">${s.company}</td>
+      <td style="text-align:center;"><span class="cpill">${s.count}</span></td>
+      <td style="text-align:center;"><span class="${pc} pkg-val">${s.highest>0?'₹'+s.highest+' LPA':'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><span class="barf" style="width:${Math.round((s.count/maxC)*120)}px;min-width:4px;"></span><span style="font-size:11px;color:var(--muted);">${pct}%</span></div></td></tr>`;
+  }).join('');
+}
+function drawBadges(batch, stats) {
+  const el = document.getElementById('rbb-'+batch); if (!el) return;
+  el.innerHTML = stats.slice(0,10).map(s =>
+    `<span class="rbadge">&#127962; ${s.company} — <strong>${s.count}</strong> placed${s.highest>0?' | ₹'+s.highest+' LPA':''}</span>`
+  ).join('');
+}
+</script>
+
+</body>
+</html>
+
+</body>
+</html>

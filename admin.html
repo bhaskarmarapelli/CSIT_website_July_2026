@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — CS&IT KL University</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  <style>
+    body { background: #f0f2f5; font-family:'Segoe UI',Arial,sans-serif; }
+    .admin-login {
+      min-height: 100vh; display:flex; align-items:center; justify-content:center;
+    }
+    .login-box {
+      background:white; border-radius:10px; padding:40px; width:360px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.12); text-align:center;
+    }
+    .login-box h2 { color:#1C3557; margin-bottom:8px; }
+    .login-box p { color:#666; font-size:13px; margin-bottom:24px; }
+    .admin-wrap { display:none; }
+
+    /* Admin Header */
+    .admin-header {
+      background:#1C3557; color:white;
+      padding:14px 24px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .admin-header h1 { font-size:18px; margin:0; }
+    .admin-header a { color:#D4A017; font-size:13px; text-decoration:none; }
+
+    /* Tabs */
+    .admin-tabs {
+      background:white; border-bottom:2px solid #dee2e6;
+      display:flex; overflow-x:auto;
+      position:sticky; top:54px; z-index:99;
+    }
+    .admin-tab {
+      padding:13px 20px; font-size:13.5px; font-weight:600;
+      cursor:pointer; color:#666; white-space:nowrap;
+      border-bottom:3px solid transparent; margin-bottom:-2px;
+      transition:all 0.2s;
+    }
+    .admin-tab:hover { color:#1C3557; background:#f8f9fa; }
+    .admin-tab.active { color:#1C3557; border-bottom-color:#D4A017; }
+
+    /* Panel */
+    .admin-panels { padding:24px; max-width:1100px; margin:0 auto; }
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+
+    /* Cards */
+    .admin-card {
+      background:white; border-radius:8px; padding:24px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.08); margin-bottom:24px;
+    }
+    .admin-card h3 { color:#1C3557; font-size:16px; margin-bottom:16px; border-bottom:2px solid #D4A017; padding-bottom:8px; }
+
+    /* Form Grid */
+    .form-grid { display:grid; gap:14px; }
+    .form-grid-2 { grid-template-columns:1fr 1fr; }
+    .form-grid-3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group label { font-size:12px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:0.4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      border:1px solid #ddd; border-radius:5px; padding:9px 12px;
+      font-size:14px; font-family:inherit; transition:border 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline:none; border-color:#1C3557;
+    }
+    .form-group textarea { resize:vertical; min-height:70px; }
+    .btn-add {
+      background:#1C3557; color:white; border:none;
+      padding:10px 24px; border-radius:5px; font-size:14px; font-weight:700;
+      cursor:pointer; transition:background 0.2s; margin-top:4px;
+    }
+    .btn-add:hover { background:#0f1d3a; }
+    .btn-reset { background:#8b1a1a; }
+    .btn-reset:hover { background:#6a1313; }
+
+    /* Entry list */
+    .entries-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .entries-table th { background:#f0f4fb; color:#1C3557; padding:9px 12px; text-align:left; font-weight:700; font-size:12px; text-transform:uppercase; }
+    .entries-table td { padding:9px 12px; border-bottom:1px solid #eee; vertical-align:top; }
+    .entries-table tbody tr:hover td { background:#f8f9ff; }
+    .count-badge { background:#1C3557; color:white; font-size:11px; padding:2px 8px; border-radius:10px; margin-left:8px; }
+    .batch-selector { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .batch-btn { padding:6px 16px; border:1px solid #ddd; border-radius:20px; background:white; font-size:13px; cursor:pointer; }
+    .batch-btn.active { background:#1C3557; color:white; border-color:#1C3557; }
+    .empty-msg { text-align:center; padding:30px; color:#999; font-size:14px; }
+    .video-preview { margin-top:10px; max-width:240px; }
+    .video-preview iframe { width:100%; border-radius:6px; border:none; }
+
+  </style>
+  <style>
+    /* Mobile table scroll */
+    .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Bottom padding for Apply Now fixed bar */
+    @media(max-width:576px){ body { padding-bottom: 48px; } }
+    /* Prevent horizontal overflow */
+    body { overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
+    /* Responsive iframes (organogram, etc.) */
+    iframe { max-width: 100%; }
+
+    /* ── Admin Mobile Fixes ── */
+    @media(max-width:700px){
+      .form-grid-2, .form-grid-3 { grid-template-columns: 1fr !important; }
+      .admin-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+      .admin-tab { padding: 10px 14px; font-size: 12px; }
+      .admin-panels { padding: 12px; }
+      .admin-card { padding: 16px; }
+      .admin-header h1 { font-size: 15px; }
+      .entries-table { min-width: 560px; }
+      .entries-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .batch-selector { flex-wrap: wrap; }
+      .batch-btn { font-size: 12px; padding: 5px 12px; }
+    }
+    @media(max-width:480px){
+      .login-box { width: 95%; padding: 24px 20px; }
+      .kpi-row { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body data-page="admin">
+
+<!-- LOGIN SCREEN -->
+<div class="admin-login" id="loginScreen">
+  <div class="login-box">
+    <div style="font-size:42px;margin-bottom:12px;">&#128272;</div>
+    <h2>CS&IT Admin Panel</h2>
+    <p>Enter the admin password to manage website content.</p>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Password</label>
+      <input type="password" id="pwdInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-add" style="width:100%;" onclick="doLogin()">Login</button>
+    <p style="margin-top:16px;font-size:12px;color:#aaa;">Default password: <code>csit@klu2024</code></p>
+  </div>
+</div>
+
+<!-- ADMIN WRAP -->
+<div class="admin-wrap" id="adminWrap">
+
+  <div class="admin-header">
+    <h1>&#9881; CS&IT Admin Panel</h1>
+    <div style="display:flex;gap:20px;align-items:center;">
+      <a href="index.html" target="_blank">&#127760; View Website</a>
+      <a href="#" onclick="doLogout()">&#128682; Logout</a>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="admin-tabs">
+    <div class="admin-tab active" onclick="switchTab('events',this)">&#128226; News &amp; Events</div>
+    <div class="admin-tab" onclick="switchTab('placements',this)">&#128188; Placements</div>
+    <div class="admin-tab" onclick="switchTab('awards',this)">&#127942; Faculty Awards</div>
+    <div class="admin-tab" onclick="switchTab('fdps',this)">&#128216; FDPs</div>
+    <div class="admin-tab" onclick="switchTab('sports',this)">&#9917; Sports</div>
+    <div class="admin-tab" onclick="switchTab('clubs',this)">&#127891; Clubs</div>
+    <div class="admin-tab" onclick="switchTab('videos',this)">&#127916; Success Videos</div>
+    <div class="admin-tab" onclick="switchTab('publications',this)">&#128196; Publications</div>
+    <div class="admin-tab" onclick="switchTab('books',this)">&#128218; Books</div>
+    <div class="admin-tab" onclick="switchTab('patents',this)">&#128737; Patents</div>
+  </div>
+
+  <div class="admin-panels">
+
+    <!-- ══════ NEWS & EVENTS ══════ -->
+    <div class="admin-panel active" id="panel-events">
+      <div class="admin-card">
+        <h3>&#10133; Add News / Event</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Title *</label><input id="ev-title" placeholder="Event title"/></div>
+          <div class="form-group">
+            <label>Type *</label>
+            <select id="ev-type">
+              <option>Placement</option><option>Technical</option><option>Achievement</option>
+              <option>Faculty</option><option>Academic</option><option>Club</option>
+              <option>Sports</option><option>Event</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Date *</label><input type="date" id="ev-date"/></div>
+          <div class="form-group"><label>Description *</label><input id="ev-desc" placeholder="Short description for ticker"/></div>
+        </div>
+        <button class="btn-add" onclick="addEvent()" style="margin-top:14px;">&#10133; Add Event</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; All Events &amp; News <span class="count-badge" id="ev-count">0</span></h3>
+        <div id="ev-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ PLACEMENTS ══════ -->
+    <div class="admin-panel" id="panel-placements">
+      <div class="admin-card">
+        <h3>&#10133; Add Placement Record</h3>
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Batch Year *</label>
+            <select id="pl-batch" onchange="renderPlacements()">
+              <option value="y26">Y26 (2026)</option>
+              <option value="y25">Y25 (2025)</option>
+              <option value="y24">Y24 (2024)</option>
+              <option value="y23">Y23 (2023)</option>
+              <option value="y22" selected>Y22 (2022)</option>
+              <option value="y21">Y21 (2021)</option>
+              <option value="y20">Y20 (2020)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Roll Number *</label><input id="pl-roll" placeholder="e.g. 2300090001"/></div>
+          <div class="form-group"><label>Student Name *</label><input id="pl-name" placeholder="Full name"/></div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="pl-gender"><option>Male</option><option>Female</option></select>
+          </div>
+          <div class="form-group"><label>Company *</label><input id="pl-company" placeholder="Company name"/></div>
+          <div class="form-group"><label>CTC Display *</label><input id="pl-ctc" placeholder="e.g. 7.5 LPA or 4–6 LPA"/></div>
+          <div class="form-group">
+            <label>CTC Numeric (highest, LPA) *</label>
+            <input type="number" id="pl-ctcNum" placeholder="e.g. 7.5" step="0.1" min="0"/>
+            <small style="color:#888;font-size:11px;">Used for graphs &amp; sorting. Enter the highest value of the package.</small>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addPlacement()" style="margin-top:14px;">&#10133; Add Record</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Placement Records</h3>
+        <div class="batch-selector" id="pl-batch-tabs"></div>
+        <div id="pl-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ FACULTY AWARDS ══════ -->
+    <div class="admin-panel" id="panel-awards">
+      <div class="admin-card">
+        <h3>&#10133; Add Faculty Award</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Emp ID</label><input id="aw-empid" placeholder="e.g. 7367"/></div>
+          <div class="form-group"><label>Faculty Name *</label><input id="aw-name" placeholder="Dr. Full Name"/></div>
+          <div class="form-group"><label>Award Name *</label><input id="aw-award" placeholder="Award title"/></div>
+          <div class="form-group"><label>Awarding Agency *</label><input id="aw-agency" placeholder="Organization name"/></div>
+          <div class="form-group">
+            <label>Level</label>
+            <select id="aw-level"><option>International</option><option>National</option><option>State</option></select>
+          </div>
+          <div class="form-group"><label>Date</label><input id="aw-date" placeholder="e.g. 15.01.2026"/></div>
+          <div class="form-group"><label>Reference No.</label><input id="aw-ref" placeholder="Certificate / Award ID"/></div>
+          <div class="form-group">
+            <label>Academic Year *</label>
+            <select id="aw-acyr"></select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addAward()" style="margin-top:14px;">&#10133; Add Award</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Faculty Awards <span class="count-badge" id="aw-count">0</span></h3>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+          <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Filter by Year:</label>
+          <select id="aw-filter-yr" onchange="renderAwards()" style="border:1px solid #ddd;border-radius:5px;padding:6px 10px;font-size:13px;">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        <div id="aw-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ FDPs ══════ -->
+    <div class="admin-panel" id="panel-fdps">
+      <div class="admin-card">
+        <h3>&#10133; Add FDP Record</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Emp ID</label><input id="fd-empid" placeholder="e.g. 8890"/></div>
+          <div class="form-group"><label>Faculty Name *</label><input id="fd-name" placeholder="Dr. Full Name"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>FDP Title *</label><input id="fd-title" placeholder="Full name of the FDP/workshop attended"/></div>
+          <div class="form-group"><label>Dates *</label><input id="fd-dates" placeholder="e.g. 10/01/2026 – 14/01/2026"/></div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="fd-cat">
+              <option>AI / ML</option><option>Cloud Computing</option><option>Cybersecurity</option>
+              <option>Quantum Computing</option><option>Data Science</option>
+              <option>NEP / Policy</option><option>Research Methods</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Academic Year *</label>
+            <select id="fd-acyr"></select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addFDP()" style="margin-top:14px;">&#10133; Add FDP</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; FDP Records <span class="count-badge" id="fd-count">0</span></h3>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+          <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;">Filter by Year:</label>
+          <select id="fd-filter-yr" onchange="renderFDPs()" style="border:1px solid #ddd;border-radius:5px;padding:6px 10px;font-size:13px;">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        <div id="fd-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ SPORTS ══════ -->
+    <div class="admin-panel" id="panel-sports">
+      <div class="admin-card">
+        <h3>&#10133; Add Sports Achievement / Event</h3>
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Year *</label>
+            <select id="sp-year" id="sp-year"></select>
+          </div>
+          <div class="form-group"><label>Event Name *</label><input id="sp-event" placeholder="e.g. Intra-Dept Cricket Tournament"/></div>
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="sp-cat">
+              <option>Cricket</option><option>Football</option><option>Badminton</option>
+              <option>Table Tennis</option><option>Basketball</option><option>Athletics</option>
+              <option>Chess</option><option>Multi-Sport</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Achievement / Result *</label><input id="sp-ach" placeholder="e.g. CS&IT team wins gold medal"/></div>
+          <div class="form-group"><label>No. of Participants</label><input type="number" id="sp-part" placeholder="e.g. 48"/></div>
+        </div>
+        <button class="btn-add" onclick="addSport()" style="margin-top:14px;">&#10133; Add Achievement</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Sports Records <span class="count-badge" id="sp-count">0</span></h3>
+        <div id="sp-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ CLUBS ══════ -->
+    <div class="admin-panel" id="panel-clubs">
+      <div class="admin-card">
+        <h3>&#10133; Add Club Activity</h3>
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Club *</label>
+            <select id="cl-club"><option>EFIT</option><option>Rubix</option><option>Other</option></select>
+          </div>
+          <div class="form-group"><label>Activity Title *</label><input id="cl-title" placeholder="Event / activity name"/></div>
+          <div class="form-group"><label>Date *</label><input type="date" id="cl-date"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Description *</label><textarea id="cl-desc" placeholder="What happened, how many participated, outcome..."></textarea></div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="cl-type"><option>Competition</option><option>Workshop</option><option>Seminar</option><option>Achievement</option><option>Social</option><option>Other</option></select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addClub()" style="margin-top:14px;">&#10133; Add Activity</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Club Activities <span class="count-badge" id="cl-count">0</span></h3>
+        <div id="cl-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ VIDEOS ══════ -->
+    <div class="admin-panel" id="panel-videos">
+      <div class="admin-card">
+        <h3>&#10133; Add Success Story Video</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>YouTube Video ID or URL *</label>
+            <input id="vd-yt" placeholder="e.g. dQw4w9WgXcQ or full YouTube URL" oninput="previewVideo()"/>
+            <small style="color:#888;font-size:11px;">Paste the YouTube video ID or full URL</small>
+          </div>
+          <div class="form-group"><label>Video Title *</label><input id="vd-title" placeholder="e.g. From KLU to Google — Ravi's Journey"/></div>
+          <div class="form-group"><label>Student Name &amp; Batch *</label><input id="vd-student" placeholder="e.g. Ravi Kumar, Y22"/></div>
+          <div class="form-group"><label>Company &amp; Package *</label><input id="vd-company" placeholder="e.g. Google · 45 LPA"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea id="vd-desc" placeholder="Brief story about the student's journey..."></textarea></div>
+        </div>
+        <div class="video-preview" id="videoPreview"></div>
+        <button class="btn-add" onclick="addVideo()" style="margin-top:14px;">&#10133; Add Video</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Success Story Videos <span class="count-badge" id="vd-count">0</span></h3>
+        <div id="vd-list"></div>
+      </div>
+    </div>
+
+
+    <!-- ══════ PUBLICATIONS (Journals) ══════ -->
+    <div class="admin-panel" id="panel-publications">
+      <div class="admin-card">
+        <h3>&#10133; Add Journal Publication</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Emp ID</label><input id="pb-empId" placeholder="e.g. 7367"/></div>
+          <div class="form-group"><label>Faculty Name *</label><input id="pb-name" placeholder="Dr. Full Name"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Paper Title *</label><input id="pb-title" placeholder="Full paper title"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Journal Name *</label><input id="pb-journal" placeholder="e.g. Expert Systems with Applications, Elsevier"/></div>
+          <div class="form-group"><label>Volume / Issue</label><input id="pb-volume" placeholder="e.g. Vol. 248, No. 2"/></div>
+          <div class="form-group"><label>Year</label><input id="pb-year" placeholder="e.g. 2025"/></div>
+          <div class="form-group"><label>Indexing</label><input id="pb-indexing" placeholder="e.g. Scopus · SCI"/></div>
+          <div class="form-group"><label>Impact Factor</label><input id="pb-if" placeholder="e.g. 7.5"/></div>
+          <div class="form-group"><label>Quartile</label>
+            <select id="pb-quartile">
+              <option value="">— Select —</option>
+              <option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option>
+            </select>
+          </div>
+          <div class="form-group"><label>DOI</label><input id="pb-doi" placeholder="e.g. 10.1016/j.eswa.2025.001"/></div>
+          <div class="form-group"><label>Academic Year *</label>
+            <select id="pb-year-ay">
+              <option value="">— Select —</option>
+              <option>2025-26</option><option>2024-25</option><option>2023-24</option>
+              <option>2022-23</option><option>2021-22</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addPublication()" style="margin-top:14px;">&#10133; Add Publication</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Journal Publications <span class="count-badge" id="pb-count">0</span></h3>
+        <div style="margin-bottom:12px;">
+          <select id="pb-filter-yr" onchange="renderPublications()" style="border:1px solid #ddd;border-radius:5px;padding:6px 10px;font-size:13px;">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        <div id="pb-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ BOOKS ══════ -->
+    <div class="admin-panel" id="panel-books">
+      <div class="admin-card">
+        <h3>&#10133; Add Book / Chapter</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Emp ID</label><input id="bk-empId" placeholder="e.g. 7367"/></div>
+          <div class="form-group"><label>Faculty Name *</label><input id="bk-name" placeholder="Dr. Full Name"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Book / Chapter Title *</label><input id="bk-title" placeholder="Full title"/></div>
+          <div class="form-group"><label>Publisher *</label><input id="bk-publisher" placeholder="e.g. Springer, Wiley, Elsevier"/></div>
+          <div class="form-group"><label>Type</label>
+            <select id="bk-type">
+              <option>Book Chapter</option><option>Textbook</option><option>Edited Book</option>
+            </select>
+          </div>
+          <div class="form-group"><label>ISBN</label><input id="bk-isbn" placeholder="e.g. 978-3-031-XXXXX-X"/></div>
+          <div class="form-group"><label>Year</label><input id="bk-year" placeholder="e.g. 2025"/></div>
+          <div class="form-group"><label>Academic Year *</label>
+            <select id="bk-year-ay">
+              <option value="">— Select —</option>
+              <option>2025-26</option><option>2024-25</option><option>2023-24</option>
+              <option>2022-23</option><option>2021-22</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addBook()" style="margin-top:14px;">&#10133; Add Book</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Books &amp; Chapters <span class="count-badge" id="bk-count">0</span></h3>
+        <div style="margin-bottom:12px;">
+          <select id="bk-filter-yr" onchange="renderBooks()" style="border:1px solid #ddd;border-radius:5px;padding:6px 10px;font-size:13px;">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        <div id="bk-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════ PATENTS ══════ -->
+    <div class="admin-panel" id="panel-patents">
+      <div class="admin-card">
+        <h3>&#10133; Add Patent</h3>
+        <div class="form-grid form-grid-2">
+          <div class="form-group"><label>Emp ID</label><input id="pt-empId" placeholder="e.g. 7367"/></div>
+          <div class="form-group"><label>Faculty Name *</label><input id="pt-name" placeholder="Dr. Full Name"/></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Patent Title *</label><input id="pt-title" placeholder="Full invention title"/></div>
+          <div class="form-group"><label>Application No.</label><input id="pt-appNo" placeholder="e.g. 202441012XXX"/></div>
+          <div class="form-group"><label>Patent Office</label><input id="pt-office" value="Indian Patent Office"/></div>
+          <div class="form-group"><label>Status</label>
+            <select id="pt-status">
+              <option>Filed</option><option>Published</option><option>Granted</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Filed Date</label><input id="pt-filed" placeholder="e.g. Jan 2024"/></div>
+          <div class="form-group"><label>Granted Date</label><input id="pt-granted" placeholder="e.g. Dec 2024 (if granted)"/></div>
+          <div class="form-group"><label>Academic Year *</label>
+            <select id="pt-year-ay">
+              <option value="">— Select —</option>
+              <option>2025-26</option><option>2024-25</option><option>2023-24</option>
+              <option>2022-23</option><option>2021-22</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addPatent()" style="margin-top:14px;">&#10133; Add Patent</button>
+      </div>
+      <div class="admin-card">
+        <h3>&#128203; Patents <span class="count-badge" id="pt-count">0</span></h3>
+        <div style="margin-bottom:12px;">
+          <select id="pt-filter-yr" onchange="renderPatents()" style="border:1px solid #ddd;border-radius:5px;padding:6px 10px;font-size:13px;">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        <div id="pt-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /admin-panels -->
+</div><!-- /adminWrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script>
+const PASS = 'csit@klu2024';
+let currentPlBatch = 'y22';
+
+// ── Auth ────────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById('pwdInput').value;
+  if (pw === PASS) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminWrap').style.display = 'block';
+    initAdmin();
+  } else {
+    showToast('Incorrect password', 'error');
+  }
+}
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminWrap').style.display = 'none';
+  document.getElementById('pwdInput').value = '';
+}
+
+// ── Tab switching ────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'placements') renderPlacementBatchTabs();
+}
+
+// ── Init ────────────────────────────────────────────
+function initAdmin() {
+  const yr = new Date().getFullYear();
+
+  // Populate sports year dropdown
+  const sy = document.getElementById('sp-year');
+  for (let y = yr; y >= 2020; y--) {
+    const o = document.createElement('option'); o.value = o.text = y; sy.appendChild(o);
+  }
+
+  // Populate academic year dropdowns (e.g. 2025-26)
+  const acYears = [];
+  for (let y = yr; y >= 2020; y--) acYears.push(`${y}-${String(y+1).slice(-2)}`);
+
+  ['aw-acyr', 'fd-acyr'].forEach(id => {
+    const sel = document.getElementById(id);
+    acYears.forEach(ay => {
+      const o = document.createElement('option'); o.value = o.text = ay; sel.appendChild(o);
+    });
+  });
+
+  // Populate filter dropdowns
+  populateAwardYearFilter();
+  populateFdpYearFilter();
+
+  renderAll();
+}
+
+function populateAwardYearFilter() {
+  const sel = document.getElementById('aw-filter-yr');
+  const awards = DB.get('awards') || [];
+  const years = [...new Set(awards.map(a => a.academicYear || 'Other'))].sort().reverse();
+  // Keep the "All Years" option, rebuild the rest
+  while (sel.options.length > 1) sel.remove(1);
+  years.forEach(y => { const o = document.createElement('option'); o.value = o.text = y; sel.appendChild(o); });
+}
+
+function populateFdpYearFilter() {
+  const sel = document.getElementById('fd-filter-yr');
+  const fdps = DB.get('fdps') || [];
+  const years = [...new Set(fdps.map(f => f.academicYear || 'Other'))].sort().reverse();
+  while (sel.options.length > 1) sel.remove(1);
+  years.forEach(y => { const o = document.createElement('option'); o.value = o.text = y; sel.appendChild(o); });
+}
+
+function renderAll() {
+  renderEvents(); renderPlacementBatchTabs(); renderAwards();
+  renderFDPs(); renderSports(); renderClubs(); renderVideos();
+  renderPublications(); renderBooks(); renderPatents();
+}
+
+// ── PUBLICATIONS ─────────────────────────────────────
+function addPublication() {
+  const empId      = document.getElementById('pb-empId').value.trim();
+  const name       = document.getElementById('pb-name').value.trim();
+  const title      = document.getElementById('pb-title').value.trim();
+  const journal    = document.getElementById('pb-journal').value.trim();
+  const volume     = document.getElementById('pb-volume').value.trim();
+  const year       = document.getElementById('pb-year').value.trim();
+  const indexing   = document.getElementById('pb-indexing').value.trim();
+  const impactFactor = document.getElementById('pb-if').value.trim();
+  const quartile   = document.getElementById('pb-quartile').value;
+  const doi        = document.getElementById('pb-doi').value.trim();
+  const academicYear = document.getElementById('pb-year-ay').value;
+  if (!name || !title || !journal || !academicYear) { showToast('Name, title, journal and academic year are required', 'error'); return; }
+  DB.push('publications', { empId, name, title, journal, volume, year, indexing, impactFactor, quartile, doi, academicYear });
+  ['pb-empId','pb-name','pb-title','pb-journal','pb-volume','pb-year','pb-indexing','pb-if','pb-doi'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pb-quartile').value = '';
+  document.getElementById('pb-year-ay').value = '';
+  renderPublications(); showToast('\u2705 Publication added!');
+}
+function deletePublication(id) { DB.remove('publications', id); renderPublications(); showToast('Publication deleted'); }
+function renderPublications() {
+  const all   = DB.get('publications') || [];
+  const sel   = document.getElementById('pb-filter-yr');
+  const years = [...new Set(all.map(p => p.academicYear || 'Other'))].sort().reverse();
+  while (sel.options.length > 1) sel.remove(1);
+  years.forEach(y => { const o = document.createElement('option'); o.value = o.text = y; sel.appendChild(o); });
+  const yr    = sel.value;
+  const list  = yr ? all.filter(p => p.academicYear === yr) : all;
+  document.getElementById('pb-count').textContent = all.length;
+  document.getElementById('pb-list').innerHTML = list.length ? list.map(p => `
+    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-left:4px solid #8B1A1A;border-radius:8px;padding:14px 16px;margin-bottom:10px;">
+      <div style="font-weight:700;color:#1a1a2e;margin-bottom:4px;">${p.title}</div>
+      <div style="font-size:13px;color:#555;">&#128100; <strong>${p.name}</strong> &nbsp;|&nbsp; <em>${p.journal}</em>${p.volume ? ', '+p.volume : ''}${p.year ? ', '+p.year : ''}</div>
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        ${p.indexing ? `<span style="background:#e8f0fb;color:#1C3557;font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;">${p.indexing}</span>` : ''}
+        ${p.quartile ? `<span style="background:#fff3cd;color:#856404;font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;">${p.quartile}</span>` : ''}
+        ${p.impactFactor ? `<span style="background:#e6f4ea;color:#1a5c2a;font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;">IF: ${p.impactFactor}</span>` : ''}
+        <span style="font-size:12px;color:#888;">${p.academicYear || ''}</span>
+        <button onclick="deletePublication(${p.id})" style="margin-left:auto;background:none;border:none;color:#c00;font-size:20px;cursor:pointer;line-height:1;">&#128465;</button>
+      </div>
+    </div>`).join('') : '<p style="color:#999;padding:20px 0;text-align:center;">No publications found.</p>';
+}
+
+// ── BOOKS ─────────────────────────────────────────────
+function addBook() {
+  const empId      = document.getElementById('bk-empId').value.trim();
+  const name       = document.getElementById('bk-name').value.trim();
+  const title      = document.getElementById('bk-title').value.trim();
+  const publisher  = document.getElementById('bk-publisher').value.trim();
+  const type       = document.getElementById('bk-type').value;
+  const isbn       = document.getElementById('bk-isbn').value.trim();
+  const year       = document.getElementById('bk-year').value.trim();
+  const academicYear = document.getElementById('bk-year-ay').value;
+  if (!name || !title || !academicYear) { showToast('Name, title and academic year are required', 'error'); return; }
+  DB.push('books', { empId, name, title, publisher, type, isbn, year, academicYear });
+  ['bk-empId','bk-name','bk-title','bk-publisher','bk-isbn','bk-year'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bk-year-ay').value = '';
+  renderBooks(); showToast('\u2705 Book record added!');
+}
+function deleteBook(id) { DB.remove('books', id); renderBooks(); showToast('Book deleted'); }
+function renderBooks() {
+  const all   = DB.get('books') || [];
+  const sel   = document.getElementById('bk-filter-yr');
+  const years = [...new Set(all.map(b => b.academicYear || 'Other'))].sort().reverse();
+  while (sel.options.length > 1) sel.remove(1);
+  years.forEach(y => { const o = document.createElement('option'); o.value = o.text = y; sel.appendChild(o); });
+  const yr    = sel.value;
+  const list  = yr ? all.filter(b => b.academicYear === yr) : all;
+  document.getElementById('bk-count').textContent = all.length;
+  document.getElementById('bk-list').innerHTML = list.length ? list.map(b => `
+    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-left:4px solid #2d6a4f;border-radius:8px;padding:14px 16px;margin-bottom:10px;">
+      <div style="font-weight:700;color:#1a1a2e;margin-bottom:4px;">${b.title}</div>
+      <div style="font-size:13px;color:#555;">&#128100; <strong>${b.name}</strong> &nbsp;|&nbsp; &#127970; ${b.publisher || '—'}</div>
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="background:#d1f0e3;color:#2d6a4f;font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;">${b.type || 'Book Chapter'}</span>
+        ${b.isbn ? `<span style="font-size:12px;color:#888;">ISBN: ${b.isbn}</span>` : ''}
+        <span style="font-size:12px;color:#888;">${b.year || ''} &nbsp; ${b.academicYear || ''}</span>
+        <button onclick="deleteBook(${b.id})" style="margin-left:auto;background:none;border:none;color:#c00;font-size:20px;cursor:pointer;line-height:1;">&#128465;</button>
+      </div>
+    </div>`).join('') : '<p style="color:#999;padding:20px 0;text-align:center;">No books found.</p>';
+}
+
+// ── PATENTS ───────────────────────────────────────────
+function addPatent() {
+  const empId      = document.getElementById('pt-empId').value.trim();
+  const name       = document.getElementById('pt-name').value.trim();
+  const title      = document.getElementById('pt-title').value.trim();
+  const applicationNo = document.getElementById('pt-appNo').value.trim();
+  const office     = document.getElementById('pt-office').value.trim();
+  const status     = document.getElementById('pt-status').value;
+  const filedDate  = document.getElementById('pt-filed').value.trim();
+  const grantedDate = document.getElementById('pt-granted').value.trim();
+  const academicYear = document.getElementById('pt-year-ay').value;
+  if (!name || !title || !academicYear) { showToast('Name, title and academic year are required', 'error'); return; }
+  DB.push('patents', { empId, name, title, applicationNo, office, status, filedDate, grantedDate, academicYear });
+  ['pt-empId','pt-name','pt-title','pt-appNo','pt-filed','pt-granted'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pt-status').value = 'Filed';
+  document.getElementById('pt-year-ay').value = '';
+  renderPatents(); showToast('\u2705 Patent added!');
+}
+function deletePatent(id) { DB.remove('patents', id); renderPatents(); showToast('Patent deleted'); }
+function renderPatents() {
+  const all   = DB.get('patents') || [];
+  const sel   = document.getElementById('pt-filter-yr');
+  const years = [...new Set(all.map(p => p.academicYear || 'Other'))].sort().reverse();
+  while (sel.options.length > 1) sel.remove(1);
+  years.forEach(y => { const o = document.createElement('option'); o.value = o.text = y; sel.appendChild(o); });
+  const yr    = sel.value;
+  const list  = yr ? all.filter(p => p.academicYear === yr) : all;
+  document.getElementById('pt-count').textContent = all.length;
+  document.getElementById('pt-list').innerHTML = list.length ? list.map(p => {
+    const isGranted = (p.status||'').toLowerCase() === 'granted';
+    return `
+    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-left:4px solid #7b2d8b;border-radius:8px;padding:14px 16px;margin-bottom:10px;">
+      <div style="font-weight:700;color:#1a1a2e;margin-bottom:4px;">${p.title}</div>
+      <div style="font-size:13px;color:#555;">&#128100; <strong>${p.name}</strong> &nbsp;|&nbsp; &#127963; ${p.office || 'Indian Patent Office'}</div>
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="background:${isGranted ? 'rgba(123,45,139,.12)' : 'rgba(180,100,0,.1)'};color:${isGranted ? '#7b2d8b' : '#a05a00'};font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;">${p.status}</span>
+        ${p.applicationNo ? `<span style="font-size:12px;color:#888;">App: ${p.applicationNo}</span>` : ''}
+        ${p.filedDate ? `<span style="font-size:12px;color:#888;">Filed: ${p.filedDate}</span>` : ''}
+        ${p.grantedDate ? `<span style="font-size:12px;color:#1a5c2a;font-weight:600;">Granted: ${p.grantedDate}</span>` : ''}
+        <span style="font-size:12px;color:#888;">${p.academicYear || ''}</span>
+        <button onclick="deletePatent(${p.id})" style="margin-left:auto;background:none;border:none;color:#c00;font-size:20px;cursor:pointer;line-height:1;">&#128465;</button>
+      </div>
+    </div>`;}).join('') : '<p style="color:#999;padding:20px 0;text-align:center;">No patents found.</p>';
+}
+
+// ── TOAST ────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'error' ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ── Helpers ──────────────────────────────────────────
+function extractYouTubeId(input) {
+  input = input.trim();
+  const urlMatch = input.match(/(?:youtu\.be\/|v=|embed\/)([a-zA-Z0-9_-]{11})/);
+  return urlMatch ? urlMatch[1] : (input.length === 11 ? input : '');
+}
+
+function noEntries(container) {
+  container.innerHTML = '<div class="empty-msg">No entries yet. Add one above.</div>';
+}
+
+// ── EVENTS ───────────────────────────────────────────
+function addEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  const type  = document.getElementById('ev-type').value;
+  const date  = document.getElementById('ev-date').value;
+  const desc  = document.getElementById('ev-desc').value.trim();
+  if (!title || !date || !desc) return showToast('Please fill all required fields', 'error');
+  DB.push('events', { title, type, date, desc });
+  ['ev-title','ev-date','ev-desc'].forEach(id => document.getElementById(id).value='');
+  renderEvents(); showToast('&#9989; Event added successfully!');
+}
+
+function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  DB.remove('events', id); renderEvents(); showToast('Event deleted');
+}
+
+function renderEvents() {
+  const items = DB.get('events') || [];
+  document.getElementById('ev-count').textContent = items.length;
+  const el = document.getElementById('ev-list');
+  if (!items.length) return noEntries(el);
+  const sorted = [...items].sort((a,b) => new Date(b.date)-new Date(a.date));
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Date</th><th>Type</th><th>Title</th><th>Description</th><th>Action</th></tr></thead>
+    <tbody>${sorted.map(e => `<tr>
+      <td>${e.date}</td>
+      <td><span class="ticker-type-badge">${e.type}</span></td>
+      <td><strong>${e.title}</strong></td>
+      <td style="max-width:320px;color:#555;">${e.desc}</td>
+      <td><button class="btn-del" onclick="deleteEvent(${e.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── PLACEMENTS ───────────────────────────────────────
+function renderPlacementBatchTabs() {
+  const batches = DB.getBatches();
+  const tabsEl = document.getElementById('pl-batch-tabs');
+  tabsEl.innerHTML = batches.map(b =>
+    `<button class="batch-btn${b===currentPlBatch?' active':''}" onclick="selectPlBatch('${b}')">${b.toUpperCase()}</button>`
+  ).join('');
+  renderPlacements();
+}
+
+function selectPlBatch(b) {
+  currentPlBatch = b;
+  renderPlacementBatchTabs();
+}
+
+function addPlacement() {
+  const batch   = document.getElementById('pl-batch').value;
+  const rollNo  = document.getElementById('pl-roll').value.trim();
+  const name    = document.getElementById('pl-name').value.trim();
+  const gender  = document.getElementById('pl-gender').value;
+  const company = document.getElementById('pl-company').value.trim();
+  const ctc     = document.getElementById('pl-ctc').value.trim();
+  const ctcNum  = parseFloat(document.getElementById('pl-ctcNum').value) || 0;
+  if (!rollNo || !name || !company || !ctc || ctcNum <= 0) return showToast('Please fill all required fields including CTC Numeric', 'error');
+  DB.addBatch(batch);
+  DB.pushPlacement(batch, { rollNo, name, gender, company, ctc, ctcNum });
+  ['pl-roll','pl-name','pl-company','pl-ctc','pl-ctcNum'].forEach(id => document.getElementById(id).value='');
+  currentPlBatch = batch;
+  renderPlacementBatchTabs(); showToast('&#9989; Placement record added!');
+}
+
+function deletePlacement(batch, id) {
+  if (!confirm('Delete this record?')) return;
+  DB.removePlacement(batch, id); renderPlacements(); showToast('Record deleted');
+}
+
+function renderPlacements() {
+  const data = DB.get('placements');
+  const items = data[currentPlBatch] || [];
+  const el = document.getElementById('pl-list');
+  if (!items.length) return noEntries(el);
+  el.innerHTML = `<p style="color:#666;font-size:13px;margin-bottom:10px;">Showing ${items.length} records for <strong>${currentPlBatch.toUpperCase()}</strong></p>
+  <table class="entries-table">
+    <thead><tr><th>#</th><th>Roll No</th><th>Student Name</th><th>Gender</th><th>Company</th><th>CTC</th><th>Action</th></tr></thead>
+    <tbody>${items.map((p,i) => `<tr>
+      <td>${i+1}</td><td>${p.rollNo}</td><td><strong>${p.name}</strong></td>
+      <td>${p.gender}</td><td>${p.company}</td>
+      <td><span class="ctc-badge">${p.ctc}</span></td>
+      <td><button class="btn-del" onclick="deletePlacement('${currentPlBatch}',${p.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── AWARDS ───────────────────────────────────────────
+function addAward() {
+  const empId       = document.getElementById('aw-empid').value.trim();
+  const name        = document.getElementById('aw-name').value.trim();
+  const award       = document.getElementById('aw-award').value.trim();
+  const agency      = document.getElementById('aw-agency').value.trim();
+  const level       = document.getElementById('aw-level').value;
+  const date        = document.getElementById('aw-date').value.trim();
+  const ref         = document.getElementById('aw-ref').value.trim();
+  const academicYear= document.getElementById('aw-acyr').value;
+  if (!name || !award || !agency || !academicYear) return showToast('Please fill required fields including Academic Year', 'error');
+  DB.push('awards', { empId, name, award, agency, level, date, ref, academicYear });
+  ['aw-empid','aw-name','aw-award','aw-agency','aw-date','aw-ref'].forEach(id => document.getElementById(id).value='');
+  populateAwardYearFilter();
+  renderAwards(); showToast('&#9989; Award added!');
+}
+
+function deleteAward(id) {
+  if (!confirm('Delete this award?')) return;
+  DB.remove('awards', id); renderAwards(); showToast('Award deleted');
+}
+
+function renderAwards() {
+  const all   = DB.get('awards') || [];
+  const filterYr = document.getElementById('aw-filter-yr') ? document.getElementById('aw-filter-yr').value : '';
+  const items = filterYr ? all.filter(a => (a.academicYear||'Other') === filterYr) : all;
+  document.getElementById('aw-count').textContent = all.length;
+  const el = document.getElementById('aw-list');
+  if (!items.length) return noEntries(el);
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Acad. Year</th><th>Emp ID</th><th>Name</th><th>Award</th><th>Agency</th><th>Level</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>${items.map(a => `<tr>
+      <td><span class="batch-btn" style="font-size:11px;padding:2px 8px;">${a.academicYear||'—'}</span></td>
+      <td>${a.empId||'—'}</td><td><strong>${a.name}</strong></td>
+      <td>${a.award}</td><td style="color:#555;">${a.agency}</td>
+      <td><span class="ctc-badge${a.level==='International'?' ctc-high':''}">${a.level}</span></td>
+      <td>${a.date||'—'}</td>
+      <td><button class="btn-del" onclick="deleteAward(${a.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── FDPs ─────────────────────────────────────────────
+function addFDP() {
+  const empId       = document.getElementById('fd-empid').value.trim();
+  const name        = document.getElementById('fd-name').value.trim();
+  const title       = document.getElementById('fd-title').value.trim();
+  const dates       = document.getElementById('fd-dates').value.trim();
+  const cat         = document.getElementById('fd-cat').value;
+  const academicYear= document.getElementById('fd-acyr').value;
+  if (!name || !title || !dates || !academicYear) return showToast('Please fill required fields including Academic Year', 'error');
+  DB.push('fdps', { empId, name, title, dates, cat, academicYear });
+  ['fd-empid','fd-name','fd-title','fd-dates'].forEach(id => document.getElementById(id).value='');
+  populateFdpYearFilter();
+  renderFDPs(); showToast('&#9989; FDP record added!');
+}
+
+function deleteFDP(id) {
+  if (!confirm('Delete this FDP record?')) return;
+  DB.remove('fdps', id); renderFDPs(); showToast('FDP deleted');
+}
+
+function renderFDPs() {
+  const all     = DB.get('fdps') || [];
+  const filterYr = document.getElementById('fd-filter-yr') ? document.getElementById('fd-filter-yr').value : '';
+  const items   = filterYr ? all.filter(f => (f.academicYear||'Other') === filterYr) : all;
+  document.getElementById('fd-count').textContent = all.length;
+  const el = document.getElementById('fd-list');
+  if (!items.length) return noEntries(el);
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Acad. Year</th><th>Emp ID</th><th>Faculty</th><th>FDP Title</th><th>Category</th><th>Dates</th><th>Action</th></tr></thead>
+    <tbody>${items.map(f => `<tr>
+      <td><span class="batch-btn" style="font-size:11px;padding:2px 8px;">${f.academicYear||'—'}</span></td>
+      <td>${f.empId||'—'}</td><td><strong>${f.name}</strong></td>
+      <td>${f.title}</td>
+      <td><span style="background:#e8f0fb;color:#1C3557;font-size:11px;padding:2px 7px;border-radius:8px;">${f.cat||'—'}</span></td>
+      <td style="white-space:nowrap;">${f.dates}</td>
+      <td><button class="btn-del" onclick="deleteFDP(${f.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── SPORTS ───────────────────────────────────────────
+function addSport() {
+  const year  = document.getElementById('sp-year').value;
+  const event = document.getElementById('sp-event').value.trim();
+  const cat   = document.getElementById('sp-cat').value;
+  const ach   = document.getElementById('sp-ach').value.trim();
+  const part  = document.getElementById('sp-part').value;
+  if (!year || !event || !ach) return showToast('Please fill required fields', 'error');
+  DB.push('sports', { year, event, category: cat, achievement: ach, participants: parseInt(part)||0 });
+  ['sp-event','sp-ach','sp-part'].forEach(id => document.getElementById(id).value='');
+  renderSports(); showToast('&#9989; Sports record added!');
+}
+
+function deleteSport(id) {
+  if (!confirm('Delete this record?')) return;
+  DB.remove('sports', id); renderSports(); showToast('Record deleted');
+}
+
+function renderSports() {
+  const items = DB.get('sports') || [];
+  document.getElementById('sp-count').textContent = items.length;
+  const el = document.getElementById('sp-list');
+  if (!items.length) return noEntries(el);
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Year</th><th>Event</th><th>Category</th><th>Achievement</th><th>Participants</th><th>Action</th></tr></thead>
+    <tbody>${items.map(s => `<tr>
+      <td><strong>${s.year}</strong></td><td>${s.event}</td>
+      <td>${s.category}</td><td style="color:#2e7d32;">${s.achievement}</td>
+      <td>${s.participants||'—'}</td>
+      <td><button class="btn-del" onclick="deleteSport(${s.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── CLUBS ────────────────────────────────────────────
+function addClub() {
+  const club  = document.getElementById('cl-club').value;
+  const title = document.getElementById('cl-title').value.trim();
+  const date  = document.getElementById('cl-date').value;
+  const desc  = document.getElementById('cl-desc').value.trim();
+  const type  = document.getElementById('cl-type').value;
+  if (!title || !date || !desc) return showToast('Please fill required fields', 'error');
+  DB.push('clubs', { club, title, date, desc, type });
+  ['cl-title','cl-date','cl-desc'].forEach(id => document.getElementById(id).value='');
+  renderClubs(); showToast('&#9989; Club activity added!');
+}
+
+function deleteClub(id) {
+  if (!confirm('Delete this activity?')) return;
+  DB.remove('clubs', id); renderClubs(); showToast('Activity deleted');
+}
+
+function renderClubs() {
+  const items = DB.get('clubs') || [];
+  document.getElementById('cl-count').textContent = items.length;
+  const el = document.getElementById('cl-list');
+  if (!items.length) return noEntries(el);
+  const sorted = [...items].sort((a,b) => new Date(b.date)-new Date(a.date));
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Date</th><th>Club</th><th>Title</th><th>Type</th><th>Description</th><th>Action</th></tr></thead>
+    <tbody>${sorted.map(c => `<tr>
+      <td>${c.date}</td>
+      <td><strong>${c.club}</strong></td>
+      <td>${c.title}</td>
+      <td><span class="event-type-tag">${c.type}</span></td>
+      <td style="max-width:280px;color:#555;">${c.desc}</td>
+      <td><button class="btn-del" onclick="deleteClub(${c.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── VIDEOS ───────────────────────────────────────────
+function previewVideo() {
+  const raw = document.getElementById('vd-yt').value;
+  const id = extractYouTubeId(raw);
+  const prev = document.getElementById('videoPreview');
+  if (id) {
+    prev.innerHTML = `<iframe width="240" height="135" src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+  } else {
+    prev.innerHTML = '';
+  }
+}
+
+function addVideo() {
+  const raw     = document.getElementById('vd-yt').value.trim();
+  const ytId    = extractYouTubeId(raw);
+  const title   = document.getElementById('vd-title').value.trim();
+  const student = document.getElementById('vd-student').value.trim();
+  const company = document.getElementById('vd-company').value.trim();
+  const desc    = document.getElementById('vd-desc').value.trim();
+  if (!ytId || !title || !student) return showToast('Please provide YouTube ID, title, and student name', 'error');
+  DB.push('videos', { youtubeId: ytId, title, student, company, desc });
+  ['vd-yt','vd-title','vd-student','vd-company','vd-desc'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('videoPreview').innerHTML = '';
+  renderVideos(); showToast('&#9989; Video added!');
+}
+
+function deleteVideo(id) {
+  if (!confirm('Delete this video?')) return;
+  DB.remove('videos', id); renderVideos(); showToast('Video deleted');
+}
+
+function renderVideos() {
+  const items = DB.get('videos') || [];
+  document.getElementById('vd-count').textContent = items.length;
+  const el = document.getElementById('vd-list');
+  if (!items.length) return noEntries(el);
+  el.innerHTML = `<table class="entries-table">
+    <thead><tr><th>Preview</th><th>Title</th><th>Student</th><th>Company</th><th>Action</th></tr></thead>
+    <tbody>${items.map(v => `<tr>
+      <td><img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" style="width:100px;border-radius:4px;"/></td>
+      <td><strong>${v.title}</strong></td>
+      <td>${v.student}</td>
+      <td>${v.company||'—'}</td>
+      <td><button class="btn-del" onclick="deleteVideo(${v.id})">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// Wrap all entries-tables for mobile scrolling
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    document.querySelectorAll('.entries-table').forEach(function(t) {
+      if (!t.parentElement.classList.contains('entries-table-wrap')) {
+        var w = document.createElement('div');
+        w.className = 'entries-table-wrap';
+        w.style.overflowX = 'auto';
+        t.parentNode.insertBefore(w, t);
+        w.appendChild(t);
+      }
+    });
+  }, 500);
+});
+</script>
+</body>
+</html>

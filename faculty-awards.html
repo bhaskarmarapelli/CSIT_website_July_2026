@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Faculty Awards — CS&IT KL University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  
+  <style>
+    .year-tabs { 
+      display:flex; 
+      gap:12px; 
+      flex-wrap:wrap; 
+      margin-bottom:30px; 
+    }
+    .year-tab-btn {
+      padding:11px 24px; 
+      border:2px solid #1C3557; 
+      border-radius:30px;
+      background:white; 
+      color:#1C3557; 
+      font-size:15px; 
+      font-weight:600;
+      cursor:pointer; 
+      transition:all 0.3s;
+    }
+    .year-tab-btn:hover, .year-tab-btn.active { 
+      background:#1C3557; 
+      color:white; 
+    }
+
+    .year-section { display:none; }
+    .year-section.active { display:block; }
+
+    .year-heading {
+      font-size:19px; 
+      font-weight:700; 
+      color:#1C3557;
+      border-left:5px solid #D4A017; 
+      padding-left:16px;
+      margin:20px 0 18px 0;
+    }
+
+    .awards-grid { 
+      display:grid; 
+      gap:18px; 
+    }
+
+    .award-card {
+      display:flex; 
+      align-items:flex-start; 
+      gap:20px;
+      background:#fff; 
+      border:1px solid #e8eaf0; 
+      border-radius:12px;
+      padding:20px; 
+      box-shadow:0 3px 10px rgba(0,0,0,0.07);
+      transition: all 0.25s;
+    }
+    .award-card:hover { 
+      box-shadow:0 8px 25px rgba(0,0,0,0.15); 
+      transform: translateY(-4px);
+    }
+
+    .award-icon { 
+      font-size:38px; 
+      flex-shrink:0; 
+    }
+
+    .award-name { 
+      font-size:16.5px; 
+      font-weight:700; 
+      color:#1C3557; 
+      margin-bottom:7px;
+    }
+    .award-faculty { 
+      font-size:14.5px; 
+      color:#222; 
+      margin-bottom:5px;
+    }
+    .award-org { 
+      font-size:13.5px; 
+      color:#555; 
+      margin-bottom:12px;
+    }
+    .award-badge {
+      display:inline-block; 
+      background:#e8f0fb; 
+      color:#1C3557;
+      font-size:13px; 
+      font-weight:600; 
+      padding:6px 14px; 
+      border-radius:20px;
+    }
+    .award-badge.intl { 
+      background:#fff3cd; 
+      color:#856404; 
+    }
+    .no-data { 
+      text-align:center; 
+      padding:80px 20px; 
+      color:#999; 
+      font-size:16px; 
+    }
+
+
+    
+  </style>
+  <style>
+    /* Mobile table scroll */
+    .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Bottom padding for Apply Now fixed bar */
+    @media(max-width:576px){ body { padding-bottom: 48px; } }
+    /* Prevent horizontal overflow */
+    body { overflow-x: hidden; }
+    img { max-width: 100%; height: auto; }
+    /* Responsive iframes (organogram, etc.) */
+    iframe { max-width: 100%; }
+  </style>
+</head>
+<body data-page="faculty">
+
+<div id="site-nav"></div>
+
+<div class="page-banner">
+  <div class="container">
+    <div class="page-banner-title">Faculty Awards</div>
+    <div class="page-banner-crumb"><a href="index.html" style="color:#D4A017;font-weight:600;">Home</a> &rsaquo; Faculty Awards</div>
+  </div>
+</div>
+
+<div class="page-content">
+  <div class="container">
+    <div class="content-grid">
+      <div class="sidebar">
+        <div class="sidebar-title">Achievements</div>
+        <ul>
+          <li><a href="faculty-awards.html" class="active">Faculty Awards</a></li>
+          <li><a href="faculty-research.html" class="active">Research &amp; Publications</a></li>
+          
+          <li><a href="fdps.html">FDPs &amp; Workshops</a></li>
+        </ul>
+      </div>
+
+      <div class="content-area">
+        <div class="content-banner">
+          <div class="banner-text">
+            <h2>Faculty Awards &amp; Recognitions</h2>
+            <p>Honoring the outstanding achievements of our faculty members</p>
+          </div>
+        </div>
+
+        <!-- Academic Year Tabs -->
+        <div class="year-tabs" id="awardYearTabs"></div>
+
+        <!-- Awards Container -->
+        <div id="awardsContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const AWARD_ICONS = ['&#127942;', '&#11088;', '&#127894;', '&#129351;', '&#127877;', '&#10024;'];
+const LEVEL_ICONS = { 'International': '&#127757;', 'National': '&#127470;&#127475;', 'State': '&#127963;' };
+
+document.addEventListener("DOMContentLoaded", function() {
+    let awards = DB.get("awards") || [];
+
+    const tabsEl = document.getElementById("awardYearTabs");
+    const container = document.getElementById("awardsContainer");
+
+    if (!awards || awards.length === 0) {
+        container.innerHTML = '<p class="no-data">No awards data available yet.</p>';
+        return;
+    }
+
+    // Robust Year Extraction (fixes Chrome "Other" issue)
+    const yearsSet = new Set();
+    awards.forEach(a => {
+        let yr = a.academicYear;
+        if (yr) yr = String(yr).trim();
+        yearsSet.add(yr || "Other");
+    });
+
+    let years = Array.from(yearsSet).sort((a, b) => {
+        return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    // Build Tabs
+    tabsEl.innerHTML = years.map((yr, i) => `
+        <button class="year-tab-btn ${i === 0 ? 'active' : ''}" 
+                onclick="showAwardYear('${yr}', this)">
+            ${yr}
+        </button>
+    `).join('');
+
+    // Build Sections
+    let html = '';
+    years.forEach((yr, idx) => {
+        const list = awards.filter(a => {
+            let awardYear = a.academicYear;
+            if (awardYear) awardYear = String(awardYear).trim();
+            return (awardYear || "Other") === yr;
+        });
+
+        html += `
+        <div class="year-section ${idx === 0 ? 'active' : ''}" id="aw-yr-${yr.replace(/[^a-zA-Z0-9]/g, '-')}">
+            <div class="year-heading">
+                Academic Year: ${yr} 
+                <span style="font-size:14px;font-weight:500;color:#666;">(${list.length} Awards)</span>
+            </div>
+            <div class="awards-grid">
+                ${list.map((a, i) => `
+                <div class="award-card">
+                    <div class="award-icon">${AWARD_ICONS[i % AWARD_ICONS.length]}</div>
+                    <div style="flex:1;">
+                        <div class="award-name">${a.award}</div>
+                        <div class="award-faculty">
+                            &#128100; ${a.name}
+                            ${a.empId ? `<span style="color:#666;font-size:13px;"> (Emp ID: ${a.empId})</span>` : ''}
+                        </div>
+                        <div class="award-org">&#127963; ${a.agency}</div>
+                        
+                        <span class="award-badge ${a.level === 'International' ? 'intl' : ''}">
+                            ${LEVEL_ICONS[a.level] || ''} ${a.level} &middot; ${a.date || ''}
+                        </span>
+                        ${a.ref ? `<span style="margin-left:12px;font-size:13px;color:#444;">Ref: ${a.ref}</span>` : ''}
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+});
+
+window.showAwardYear = function(yr, btn) {
+    document.querySelectorAll('.year-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.year-section').forEach(s => s.classList.remove('active'));
+
+    btn.classList.add('active');
+
+    const sectionId = 'aw-yr-' + yr.replace(/[^a-zA-Z0-9]/g, '-');
+    const section = document.getElementById(sectionId);
+    if (section) section.classList.add('active');
+};
+</script>
+</body>
+</html>
