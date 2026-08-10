@@ -183,7 +183,10 @@ body.nav-ready #site-footer { visibility: visible; opacity: 1; transition: opaci
 .dept-carousel-wrap { margin: 12px 0; border-radius: 10px; overflow: hidden; }
 .dept-carousel-wrap .carousel-item img {
   height: clamp(180px, 45vw, 520px);
-  object-fit: cover; width: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+  background: #fff;
 }
 @media (max-width: 576px) {
   .dept-carousel-wrap .carousel-item img { height: 200px; object-fit: contain; background: #fff; }
